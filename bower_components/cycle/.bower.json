@@ -1,0 +1,35 @@
+{
+  "name": "cycle",
+  "version": "0.3.2",
+  "homepage": "https://github.com/staltz/cycle",
+  "authors": [
+    "Andre Staltz"
+  ],
+  "description": "A web application framework with Model-View-Intent and Virtual DOM",
+  "main": [
+    "dist/cycle.js",
+    "dist/cycle.min.js"
+  ],
+  "keywords": [
+    "mvi",
+    "unidirectional",
+    "virtual-dom"
+  ],
+  "license": "MIT",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "_release": "0.3.2",
+  "_resolution": {
+    "type": "version",
+    "tag": "v0.3.2",
+    "commit": "079dc43b5e87f300c972ccba27d58bb18b624b4d"
+  },
+  "_source": "git://github.com/staltz/cycle.git",
+  "_target": "0.3.2",
+  "_originalSource": "cycle"
+}
