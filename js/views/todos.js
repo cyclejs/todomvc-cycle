@@ -18,16 +18,6 @@ function vrenderTodoItem(todoData) {
 	])
 }
 
-function Type(fn) {
-	this.fn = fn
-}
-Type.prototype.hook = function () {
-	this.fn.apply(this, arguments)
-};
-function hook(fn) {
-	return new Type(fn)
-}
-
 var TodosView = Cycle.defineView(['todos$'], function (model) {
 	return {
 		events: [
@@ -40,7 +30,7 @@ var TodosView = Cycle.defineView(['todos$'], function (model) {
 					h('header#header', [
 						h('h1', 'todos'),
 						h('input#new-todo', {
-							value: hook(function (elem, prop) {
+							value: Cycle.vdomPropHook(function (elem, prop) {
 								elem.value = todosData.input;
 							}),
 							attributes: {
