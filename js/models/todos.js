@@ -72,8 +72,11 @@ var TodosModel = Cycle.defineModel(IntentInterface, function (intent) {
 	var toggleAllMod$ = intent.toggleAll$
 		.map(function () {
 			return function (todosData) {
+				var allAreCompleted = todosData.list.reduce(function (x, y) {
+					return x && y.completed;
+				}, true);
 				todosData.list.forEach(function (todoData) {
-					todoData.completed = !todoData.completed;
+					todoData.completed = allAreCompleted ? false : true;
 				});
 				return todosData;
 			}
