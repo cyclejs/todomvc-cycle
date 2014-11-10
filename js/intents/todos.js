@@ -9,6 +9,7 @@ var ViewInterface = [
 ];
 
 var ENTER_KEY = 13;
+var ESC_KEY = 27;
 
 function getParentTodo(element) {
 	if (element.tagName.toLowerCase() === 'li' &&
@@ -38,6 +39,9 @@ var TodosIntent = Cycle.defineIntent(ViewInterface, function (view) {
 				return String(ev.target.value).trim();
 			}),
 		deleteTodo$: view.todoDestroyClicks$.map(getParentTodoId),
-		toggleTodo$: view.todoToggleClicks$.map(getParentTodoId)
+		toggleTodo$: view.todoToggleClicks$.map(getParentTodoId),
+		clearInput$: view.newTodoKeyUp$
+			.filter(function (ev) { return ev.keyCode === ESC_KEY; })
+			.map(function () { return ''; })
 	}
 });
