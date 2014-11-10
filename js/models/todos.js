@@ -5,7 +5,55 @@ var IntentInterface = ['insertTodo$', 'deleteTodo$', 'toggleTodo$',
 	'toggleAll$', 'clearInput$', 'deleteCompleteds$'
 ];
 
+// The default filter function
+function allowAnything() {
+	return true;
+}
+
+function determineFilterWithRoute(todosData, route) {
+	todosData.filter = route.replace('/', '').trim();
+	switch (route) {
+		case '/active':
+			todosData.filterFn = function (todoData) {
+				return todoData.completed === false;
+			};
+			break;
+		case '/completed':
+			todosData.filterFn = function (todoData) {
+				return todoData.completed === true;
+			};
+			break;
+		default:
+			todosData.filterFn = allowAnything;
+			break;
+	}
+	return todosData;
+}
+
+function determineTodosIndexes(todosData) {
+	todosData.list.forEach(function(todoData, index) {
+		todoData.index = index;
+	});
+	return todosData;
+}
+
+function applyModificationOnTodosData(todosData, modification) {
+	return modification(todosData);
+}
+
+var initialTodosData = {
+	list: [],
+	input: '',
+	filter: '',
+	filterFn: allowAnything
+};
+
 var TodosModel = Cycle.defineModel(IntentInterface, function (intent) {
+	var route$ = Rx.Observable.fromEvent(window, 'hashchange')
+		.map(function (event) {
+			return event.newURL.match(/\#[^\#]*$/)[0].replace('#', '');
+		})
+		.startWith(window.location.hash.replace('#', ''));
 	var insertTodoMod$ = intent.insertTodo$
 		.map(function (todoTitle) {
 			return function (todosData) {
@@ -60,9 +108,9 @@ var TodosModel = Cycle.defineModel(IntentInterface, function (intent) {
 	);
 	return {
 		todos$: modifications$
-			.startWith({list: [], input: '', filter: ''})
-			.scan(function (todosData, modification) {
-				return modification(todosData);
-			})
+			.startWith(initialTodosData)
+			.scan(applyModificationOnTodosData)
+			.map(determineTodosIndexes)
+			.combineLatest(route$, determineFilterWithRoute)
 	}
 });

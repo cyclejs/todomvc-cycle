@@ -21,23 +21,25 @@ function vrenderHeader(todosData) {
 	]);
 }
 
-function vrenderTodoItem(todoData, index) {
+function vrenderTodoItem(todoData) {
 	var classes = todoData.completed ? '.completed' : '';
 	return h('li.todo' + classes, {
-		attributes: {'data-todo-id': String(index)}
+		attributes: {'data-todo-id': String(todoData.index)}
 	}, [
 		h('div.view', [
 			h('input.toggle', {
 				type: 'checkbox',
-				checked: todoData.completed,
-				'ev-click': 'todoToggleClicks$'
+				checked: Cycle.vdomPropHook(function (elem) {
+					elem.checked = todoData.completed;
+				}),
+				'ev-change': 'todoToggleClicks$'
 			}),
 			h('label', todoData.title),
 			h('button.destroy', {
 				'ev-click': 'todoDestroyClicks$'
 			})
 		])
-	])
+	]);
 }
 
 function vrenderMainSection(todosData) {
@@ -52,7 +54,10 @@ function vrenderMainSection(todosData) {
 			checked: allCompleted,
 			'ev-click': 'toggleAllClicks$'
 		}),
-		h('ul#todo-list', todosData.list.map(vrenderTodoItem))
+		h('ul#todo-list', todosData.list
+			.filter(todosData.filterFn)
+			.map(vrenderTodoItem)
+		)
 	])
 }
 
