@@ -3,7 +3,7 @@
 
 var h = Cycle.h;
 
-function vrenderTodoItem(todoData) {
+function vrenderTodoItem(todoData, index) {
 	return h('li', [
 		h('div.view', [
 			h('input.toggle', {
@@ -12,6 +12,9 @@ function vrenderTodoItem(todoData) {
 			}),
 			h('label', todoData.title),
 			h('button.destroy', {
+				attributes: {
+					'data-todo-id': String(index)
+				},
 				'ev-click': 'todoDestroyClicks$'
 			})
 		])
