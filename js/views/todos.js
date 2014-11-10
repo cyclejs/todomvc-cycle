@@ -7,7 +7,7 @@ function vrenderHeader(todosData) {
 	return h('header#header', [
 		h('h1', 'todos'),
 		h('input#new-todo', {
-			value: Cycle.vdomPropHook(function (elem, prop) {
+			value: Cycle.vdomPropHook(function (elem) {
 				elem.value = todosData.input;
 			}),
 			attributes: {
@@ -56,17 +56,56 @@ function vrenderMainSection(todosData) {
 	])
 }
 
+function vrenderFooter(todosData) {
+	var amountCompleted = todosData.list.filter(function (todoData) {
+		return todoData.completed;
+	}).length;
+	var amountActive = todosData.list.length - amountCompleted;
+	return h('footer#footer', {
+		style: {'display': todosData.list.length ? '' : 'none'}
+	}, [
+		h('span#todo-count', [
+			h('strong', String(amountActive)),
+			' item' + (amountActive !== 1 ? 's' : '') + ' left'
+		]),
+		h('ul#filters', [
+			h('li', [
+				h('a' + (todosData.filter === '' ? '.selected' : ''), {
+					attributes: {'href': '#/'}
+				}, 'All')
+			]),
+			h('li', [
+				h('a' + (todosData.filter === 'active' ? '.selected' : ''), {
+					attributes: {'href': '#/active'}
+				}, 'Active')
+			]),
+			h('li', [
+				h('a' + (todosData.filter === 'completed' ? '.selected' : ''), {
+					attributes: {'href': '#/completed'}
+				}, 'Completed')
+			])
+		]),
+		(amountCompleted > 0 ?
+			h('button#clear-completed', {
+				'ev-click': 'clearCompletedClicks$'
+			}, 'Clear completed (' + amountCompleted + ')')
+			: null
+		)
+	])
+}
+
 var TodosView = Cycle.defineView(['todos$'], function (model) {
 	return {
 		events: [
-			'newTodoKeyUp$', 'toggleAllClicks$',
+			'newTodoKeyUp$', 'toggleAllClicks$', 'clearCompletedClicks$',
 			'todoToggleClicks$', 'todoDestroyClicks$'
 		],
 		vtree$: model.todos$
 			.map(function (todosData) {
 				return h('div', [
 					vrenderHeader(todosData),
-					vrenderMainSection(todosData)
+					vrenderMainSection(todosData),
+					vrenderFooter(todosData)
 				])
 			})
 	}

@@ -2,7 +2,7 @@
 /*global Cycle */
 
 var IntentInterface = ['insertTodo$', 'deleteTodo$', 'toggleTodo$',
-	'toggleAll$', 'clearInput$'
+	'toggleAll$', 'clearInput$', 'deleteCompleteds$'
 ];
 
 var TodosModel = Cycle.defineModel(IntentInterface, function (intent) {
@@ -45,13 +45,22 @@ var TodosModel = Cycle.defineModel(IntentInterface, function (intent) {
 				return todosData;
 			}
 		});
+	var deleteCompletedsMod$ = intent.deleteCompleteds$
+		.map(function () {
+			return function (todosData) {
+				todosData.list = todosData.list.filter(function (todoData) {
+					return todoData.completed === false;
+				});
+				return todosData
+			}
+		});
 	var modifications$ = Rx.Observable.merge(
 		insertTodoMod$, deleteTodoMod$, toggleTodoMod$, toggleAllMod$,
-		clearInputMod$
+		clearInputMod$, deleteCompletedsMod$
 	);
 	return {
 		todos$: modifications$
-			.startWith({list: [], input: ''})
+			.startWith({list: [], input: '', filter: ''})
 			.scan(function (todosData, modification) {
 				return modification(todosData);
 			})

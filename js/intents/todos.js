@@ -3,6 +3,7 @@
 
 var ViewInterface = [
 	'newTodoKeyUp$',
+	'clearCompletedClicks$',
 	'toggleAllClicks$',
 	'todoToggleClicks$',
 	'todoDestroyClicks$'
@@ -28,6 +29,10 @@ function getParentTodoId(event) {
 	return Number(todoEl.attributes['data-todo-id'].value);
 }
 
+function toEmptyString() {
+	return '';
+}
+
 var TodosIntent = Cycle.defineIntent(ViewInterface, function (view) {
 	return {
 		insertTodo$: view.newTodoKeyUp$
@@ -39,10 +44,11 @@ var TodosIntent = Cycle.defineIntent(ViewInterface, function (view) {
 				return String(ev.target.value).trim();
 			}),
 		deleteTodo$: view.todoDestroyClicks$.map(getParentTodoId),
+		deleteCompleteds$: view.clearCompletedClicks$.map(toEmptyString),
 		toggleTodo$: view.todoToggleClicks$.map(getParentTodoId),
-		toggleAll$: view.toggleAllClicks$.map(function () { return '';}),
+		toggleAll$: view.toggleAllClicks$.map(toEmptyString),
 		clearInput$: view.newTodoKeyUp$
 			.filter(function (ev) { return ev.keyCode === ESC_KEY; })
-			.map(function () { return ''; })
+			.map(toEmptyString)
 	}
 });
