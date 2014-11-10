@@ -40,6 +40,7 @@ var TodosIntent = Cycle.defineIntent(ViewInterface, function (view) {
 			}),
 		deleteTodo$: view.todoDestroyClicks$.map(getParentTodoId),
 		toggleTodo$: view.todoToggleClicks$.map(getParentTodoId),
+		toggleAll$: view.toggleAllClicks$.map(function () { return '';}),
 		clearInput$: view.newTodoKeyUp$
 			.filter(function (ev) { return ev.keyCode === ESC_KEY; })
 			.map(function () { return ''; })
