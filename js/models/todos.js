@@ -41,7 +41,9 @@ function applyModificationOnTodosData(todosData, modification) {
 	return modification(todosData);
 }
 
-var initialTodosData = {
+var storedTodosData = localStorage.getItem('todos-cycle');
+
+var initialTodosData = storedTodosData ? JSON.parse(storedTodosData) : {
 	list: [],
 	input: '',
 	filter: '',
@@ -115,5 +117,8 @@ var TodosModel = Cycle.defineModel(IntentInterface, function (intent) {
 			.scan(applyModificationOnTodosData)
 			.map(determineTodosIndexes)
 			.combineLatest(route$, determineFilterWithRoute)
+			.doOnNext(function (todosData) {
+				localStorage.setItem('todos-cycle', JSON.stringify(todosData))
+			})
 	}
 });
