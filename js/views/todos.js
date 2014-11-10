@@ -3,6 +3,24 @@
 
 var h = Cycle.h;
 
+function vrenderHeader(todosData) {
+	return h('header#header', [
+		h('h1', 'todos'),
+		h('input#new-todo', {
+			value: Cycle.vdomPropHook(function (elem, prop) {
+				elem.value = todosData.input;
+			}),
+			attributes: {
+				placeholder: 'What needs to be done?'
+			},
+			autofocus: true,
+			name: 'newTodo',
+			type: 'text',
+			'ev-keyup': 'newTodoKeyUp$'
+		})
+	]);
+}
+
 function vrenderTodoItem(todoData, index) {
 	var classes = todoData.completed ? '.completed' : '';
 	return h('li.todo' + classes, {
@@ -21,6 +39,16 @@ function vrenderTodoItem(todoData, index) {
 	])
 }
 
+function vrenderMainSection(todosData) {
+	return h('section#main', [
+		h('input#toggle-all', {
+			type: 'checkbox',
+			'ev-click': 'toggleAllClicks$'
+		}),
+		h('ul#todo-list', todosData.list.map(vrenderTodoItem))
+	])
+}
+
 var TodosView = Cycle.defineView(['todos$'], function (model) {
 	return {
 		events: [
@@ -30,28 +58,8 @@ var TodosView = Cycle.defineView(['todos$'], function (model) {
 		vtree$: model.todos$
 			.map(function (todosData) {
 				return h('div', [
-					h('header#header', [
-						h('h1', 'todos'),
-						h('input#new-todo', {
-							value: Cycle.vdomPropHook(function (elem, prop) {
-								elem.value = todosData.input;
-							}),
-							attributes: {
-								placeholder: 'What needs to be done?'
-							},
-							autofocus: true,
-							name: 'newTodo',
-							type: 'text',
-							'ev-keyup': 'newTodoKeyUp$'
-						})
-					]),
-					h('section#main', [
-						h('input#toggle-all', {
-							type: 'checkbox',
-							'ev-click': 'toggleAllClicks$'
-						}),
-						h('ul#todo-list', todosData.list.map(vrenderTodoItem))
-					])
+					vrenderHeader(todosData),
+					vrenderMainSection(todosData)
 				])
 			})
 	}
