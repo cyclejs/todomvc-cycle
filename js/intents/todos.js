@@ -10,6 +10,23 @@ var ViewInterface = [
 
 var ENTER_KEY = 13;
 
+function getParentTodo(element) {
+	if (element.tagName.toLowerCase() === 'li' &&
+		element.classList.contains('todo'))
+	{
+		return element;
+	} else if (element.tagName.toLowerCase() === 'body') {
+		return null;
+	} else {
+		return getParentTodo(element.parentNode);
+	}
+}
+
+function getParentTodoId(event) {
+	var todoEl = getParentTodo(event.target);
+	return Number(todoEl.attributes['data-todo-id'].value);
+}
+
 var TodosIntent = Cycle.defineIntent(ViewInterface, function (view) {
 	return {
 		insertTodo$: view.newTodoKeyUp$
@@ -20,9 +37,7 @@ var TodosIntent = Cycle.defineIntent(ViewInterface, function (view) {
 			.map(function (ev) {
 				return String(ev.target.value).trim();
 			}),
-		deleteTodo$: view.todoDestroyClicks$
-			.map(function (ev) {
-				return Number(ev.target.attributes['data-todo-id'].value);
-			})
+		deleteTodo$: view.todoDestroyClicks$.map(getParentTodoId),
+		toggleTodo$: view.todoToggleClicks$.map(getParentTodoId)
 	}
 });

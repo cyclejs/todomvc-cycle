@@ -4,7 +4,10 @@
 var h = Cycle.h;
 
 function vrenderTodoItem(todoData, index) {
-	return h('li', [
+	var classes = todoData.completed ? '.completed' : '';
+	return h('li.todo' + classes, {
+		attributes: { 'data-todo-id': String(index) }
+	}, [
 		h('div.view', [
 			h('input.toggle', {
 				type: 'checkbox',
@@ -12,9 +15,6 @@ function vrenderTodoItem(todoData, index) {
 			}),
 			h('label', todoData.title),
 			h('button.destroy', {
-				attributes: {
-					'data-todo-id': String(index)
-				},
 				'ev-click': 'todoDestroyClicks$'
 			})
 		])

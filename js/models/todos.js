@@ -1,14 +1,22 @@
 'use strict';
 /*global Cycle */
 
-var IntentInterface = ['insertTodo$', 'deleteTodo$'];
+var IntentInterface = ['insertTodo$', 'deleteTodo$', 'toggleTodo$'];
 
 var TodosModel = Cycle.defineModel(IntentInterface, function (intent) {
 	var insertTodoMod$ = intent.insertTodo$
 		.map(function (todoTitle) {
 			return function (todosData) {
-				todosData.list.push({title: todoTitle});
+				todosData.list.push({title: todoTitle, completed: false});
 				todosData.input = '';
+				return todosData;
+			}
+		});
+	var toggleTodo$ = intent.toggleTodo$
+		.map(function (todoIndex) {
+			return function (todosData) {
+				var previousCompleted = todosData.list[todoIndex].completed;
+				todosData.list[todoIndex].completed = !previousCompleted;
 				return todosData;
 			}
 		});
@@ -19,7 +27,9 @@ var TodosModel = Cycle.defineModel(IntentInterface, function (intent) {
 				return todosData;
 			}
 		});
-	var modifications$ = insertTodoMod$.merge(deleteTodoMod$);
+	var modifications$ = Rx.Observable.merge(
+		insertTodoMod$, deleteTodoMod$, toggleTodo$
+	);
 	return {
 		todos$: modifications$
 			.startWith({list: [], input: ''})
