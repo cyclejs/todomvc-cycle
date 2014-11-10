@@ -2,4 +2,4 @@
 /*global Cycle */
 
 Cycle.renderEvery(TodosView.vtree$, '#todoapp');
-TodosView.inject(TodosModel);
+Cycle.link(TodosModel, TodosView, TodosIntent);
