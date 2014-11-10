@@ -24,7 +24,7 @@ function vrenderHeader(todosData) {
 function vrenderTodoItem(todoData, index) {
 	var classes = todoData.completed ? '.completed' : '';
 	return h('li.todo' + classes, {
-		attributes: { 'data-todo-id': String(index) }
+		attributes: {'data-todo-id': String(index)}
 	}, [
 		h('div.view', [
 			h('input.toggle', {
@@ -40,7 +40,9 @@ function vrenderTodoItem(todoData, index) {
 }
 
 function vrenderMainSection(todosData) {
-	return h('section#main', [
+	return h('section#main', {
+		style: {'display': todosData.list.length ? '' : 'none'}
+	}, [
 		h('input#toggle-all', {
 			type: 'checkbox',
 			'ev-click': 'toggleAllClicks$'
