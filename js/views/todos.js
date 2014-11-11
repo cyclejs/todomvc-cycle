@@ -7,6 +7,7 @@ function vrenderHeader(todosData) {
 	return h('header#header', [
 		h('h1', 'todos'),
 		h('input#new-todo', {
+			type: 'text',
 			value: Cycle.vdomPropHook(function (elem) {
 				elem.value = todosData.input;
 			}),
@@ -15,14 +16,14 @@ function vrenderHeader(todosData) {
 			},
 			autofocus: true,
 			name: 'newTodo',
-			type: 'text',
 			'ev-keyup': 'newTodoKeyUp$'
 		})
 	]);
 }
 
 function vrenderTodoItem(todoData) {
-	var classes = todoData.completed ? '.completed' : '';
+	var classes = (todoData.completed ? '.completed' : '') +
+		(todoData.editing ? '.editing' : '');
 	return h('li.todo' + classes, {
 		attributes: {'data-todo-id': String(todoData.index)}
 	}, [
@@ -34,11 +35,25 @@ function vrenderTodoItem(todoData) {
 				}),
 				'ev-change': 'todoToggleClicks$'
 			}),
-			h('label', todoData.title),
+			h('label', {
+				'ev-dblclick': 'todoLabelDblClicks$'
+			}, todoData.title),
 			h('button.destroy', {
 				'ev-click': 'todoDestroyClicks$'
 			})
-		])
+		]),
+		h('input.edit', {
+			type: 'text',
+			value: Cycle.vdomPropHook(function (element) {
+				element.value = todoData.title;
+				if (todoData.editing) {
+					element.focus();
+					element.selectionStart = element.value.length;
+				}
+			}),
+			'ev-keyup': 'editTodoKeyUp$',
+			'ev-blur': 'editTodoBlur$'
+		})
 	]);
 }
 
@@ -103,7 +118,8 @@ var TodosView = Cycle.defineView(['todos$'], function (model) {
 	return {
 		events: [
 			'newTodoKeyUp$', 'toggleAllClicks$', 'clearCompletedClicks$',
-			'todoToggleClicks$', 'todoDestroyClicks$'
+			'todoToggleClicks$', 'todoDestroyClicks$', 'todoLabelDblClicks$',
+			'editTodoKeyUp$', 'editTodoBlur$'
 		],
 		vtree$: model.todos$
 			.map(function (todosData) {

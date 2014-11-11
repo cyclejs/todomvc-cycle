@@ -1,10 +1,6 @@
 'use strict';
 /*global Cycle */
 
-var IntentInterface = ['insertTodo$', 'deleteTodo$', 'toggleTodo$',
-	'toggleAll$', 'clearInput$', 'deleteCompleteds$'
-];
-
 // The default filter function
 function allowAnything() {
 	return true;
@@ -49,6 +45,14 @@ var initialTodosData = storedTodosData ? JSON.parse(storedTodosData) : {
 	filter: '',
 	filterFn: allowAnything
 };
+initialTodosData.list.forEach(function (todoData) {
+	todoData.editing = false;
+});
+
+var IntentInterface = ['insertTodo$', 'deleteTodo$', 'toggleTodo$',
+	'toggleAll$', 'clearInput$', 'deleteCompleteds$', 'startEditTodo$',
+	'editTodo$', 'doneEditing$'
+];
 
 var TodosModel = Cycle.defineModel(IntentInterface, function (intent) {
 	var route$ = Rx.Observable.fromEvent(window, 'hashchange')
@@ -56,14 +60,51 @@ var TodosModel = Cycle.defineModel(IntentInterface, function (intent) {
 			return event.newURL.match(/\#[^\#]*$/)[0].replace('#', '');
 		})
 		.startWith(window.location.hash.replace('#', ''));
+
 	var insertTodoMod$ = intent.insertTodo$
 		.map(function (todoTitle) {
 			return function (todosData) {
-				todosData.list.push({title: todoTitle, completed: false});
+				todosData.list.push({
+					title: todoTitle,
+					completed: false,
+					editing: false
+				});
 				todosData.input = '';
+				return todosData;
+			};
+		});
+
+	var startEditTodoMod$ = intent.startEditTodo$
+		.map(function (todoIndex) {
+			return function (todosData) {
+				todosData.list.forEach(function (todoData, index) {
+					todoData.editing = (index === todoIndex);
+				});
 				return todosData;
 			}
 		});
+
+	var editTodoMod$ = intent.editTodo$
+		.map(function (modObject) {
+			return function (todosData) {
+				todosData.list[modObject.index].title = modObject.value;
+				return todosData;
+			};
+		});
+
+	var stopEditingMod$ = intent.doneEditing$
+		.map(function () {
+			return function (todosData) {
+				todosData.list.forEach(function (todoData) {
+					todoData.editing = false;
+				});
+				todosData.list = todosData.list.filter(function (todoData) {
+					return todoData.title.trim().length > 0;
+				});
+				return todosData;
+			};
+		});
+
 	var clearInputMod$ = intent.clearInput$
 		.map(function () {
 			return function (todosData) {
@@ -71,6 +112,7 @@ var TodosModel = Cycle.defineModel(IntentInterface, function (intent) {
 				return todosData;
 			}
 		});
+
 	var toggleAllMod$ = intent.toggleAll$
 		.map(function () {
 			return function (todosData) {
@@ -83,6 +125,7 @@ var TodosModel = Cycle.defineModel(IntentInterface, function (intent) {
 				return todosData;
 			}
 		});
+
 	var toggleTodoMod$ = intent.toggleTodo$
 		.map(function (todoIndex) {
 			return function (todosData) {
@@ -91,6 +134,7 @@ var TodosModel = Cycle.defineModel(IntentInterface, function (intent) {
 				return todosData;
 			}
 		});
+
 	var deleteTodoMod$ = intent.deleteTodo$
 		.map(function (todoIndex) {
 			return function (todosData) {
@@ -98,6 +142,7 @@ var TodosModel = Cycle.defineModel(IntentInterface, function (intent) {
 				return todosData;
 			}
 		});
+
 	var deleteCompletedsMod$ = intent.deleteCompleteds$
 		.map(function () {
 			return function (todosData) {
@@ -107,10 +152,13 @@ var TodosModel = Cycle.defineModel(IntentInterface, function (intent) {
 				return todosData
 			}
 		});
+
 	var modifications$ = Rx.Observable.merge(
 		insertTodoMod$, deleteTodoMod$, toggleTodoMod$, toggleAllMod$,
-		clearInputMod$, deleteCompletedsMod$
+		clearInputMod$, deleteCompletedsMod$, startEditTodoMod$, editTodoMod$,
+		stopEditingMod$
 	);
+
 	return {
 		todos$: modifications$
 			.startWith(initialTodosData)

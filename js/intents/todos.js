@@ -6,6 +6,9 @@ var ViewInterface = [
 	'clearCompletedClicks$',
 	'toggleAllClicks$',
 	'todoToggleClicks$',
+	'todoLabelDblClicks$',
+	'editTodoKeyUp$',
+	'editTodoBlur$',
 	'todoDestroyClicks$'
 ];
 
@@ -13,11 +16,10 @@ var ENTER_KEY = 13;
 var ESC_KEY = 27;
 
 function getParentTodo(element) {
-	if (element.tagName.toLowerCase() === 'li' &&
-		element.classList.contains('todo'))
-	{
+	var elementTag = element.tagName.toLowerCase();
+	if (elementTag === 'li' && element.classList.contains('todo')) {
 		return element;
-	} else if (element.tagName.toLowerCase() === 'body') {
+	} else if (elementTag === 'body') {
 		return null;
 	} else {
 		return getParentTodo(element.parentNode);
@@ -47,6 +49,17 @@ var TodosIntent = Cycle.defineIntent(ViewInterface, function (view) {
 		deleteCompleteds$: view.clearCompletedClicks$.map(toEmptyString),
 		toggleTodo$: view.todoToggleClicks$.map(getParentTodoId),
 		toggleAll$: view.toggleAllClicks$.map(toEmptyString),
+		startEditTodo$: view.todoLabelDblClicks$.map(getParentTodoId),
+		editTodo$: view.editTodoKeyUp$
+			.map(function (ev) {
+				return {value: ev.target.value, index: getParentTodoId(ev)};
+			}),
+		doneEditing$: view.editTodoKeyUp$
+			.filter(function (ev) {
+				return ev.keyCode === ESC_KEY || ev.keyCode === ENTER_KEY;
+			})
+			.merge(view.editTodoBlur$)
+			.map(toEmptyString),
 		clearInput$: view.newTodoKeyUp$
 			.filter(function (ev) { return ev.keyCode === ESC_KEY; })
 			.map(toEmptyString)
