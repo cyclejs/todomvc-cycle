@@ -24,6 +24,12 @@ function determineTodosIndexes(todosData) {
 	return todosData;
 }
 
+function determineFilter(todosData, route) {
+	todosData.filter = route.replace('/', '').trim();
+	todosData.filterFn = getFilterFn(route);
+	return todosData;
+}
+
 var storedTodosData = localStorage.getItem('todos-cycle');
 
 var initialTodosData = storedTodosData ? JSON.parse(storedTodosData) :
@@ -149,17 +155,8 @@ var TodosModel = Cycle.defineModel(IntentInterface, function (intent) {
 			.scan(function (todosData, modification) {
 				return modification(todosData);
 			})
-			.map(function (todosData) {
-				todosData.list.forEach(function(todoData, index) {
-					todoData.index = index;
-				});
-				return todosData;
-			})
-			.combineLatest(route$, function (todosData, route) {
-				todosData.filter = route.replace('/', '').trim();
-				todosData.filterFn = getFilterFn(route);
-				return todosData;
-			})
+			.map(determineTodosIndexes)
+			.combineLatest(route$, determineFilter)
 			.doOnNext(function (todosData) {
 				localStorage.setItem('todos-cycle', JSON.stringify(todosData))
 			})
