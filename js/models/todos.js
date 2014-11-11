@@ -6,24 +6,15 @@ function allowAnything() {
 	return true;
 }
 
-function determineFilterWithRoute(todosData, route) {
-	todosData.filter = route.replace('/', '').trim();
+function getFilterFn(route) {
 	switch (route) {
 		case '/active':
-			todosData.filterFn = function (todoData) {
-				return todoData.completed === false;
-			};
-			break;
+			return function (task) { return task.completed === false; };
 		case '/completed':
-			todosData.filterFn = function (todoData) {
-				return todoData.completed === true;
-			};
-			break;
+			return function (task) { return task.completed === true; };
 		default:
-			todosData.filterFn = allowAnything;
-			break;
+			return allowAnything;
 	}
-	return todosData;
 }
 
 function determineTodosIndexes(todosData) {
@@ -33,18 +24,11 @@ function determineTodosIndexes(todosData) {
 	return todosData;
 }
 
-function applyModificationOnTodosData(todosData, modification) {
-	return modification(todosData);
-}
-
 var storedTodosData = localStorage.getItem('todos-cycle');
 
-var initialTodosData = storedTodosData ? JSON.parse(storedTodosData) : {
-	list: [],
-	input: '',
-	filter: '',
-	filterFn: allowAnything
-};
+var initialTodosData = storedTodosData ? JSON.parse(storedTodosData) :
+	{list: [], input: '', filter: '', filterFn: allowAnything};
+
 initialTodosData.list.forEach(function (todoData) {
 	todoData.editing = false;
 });
@@ -162,9 +146,20 @@ var TodosModel = Cycle.defineModel(IntentInterface, function (intent) {
 	return {
 		todos$: modifications$
 			.startWith(initialTodosData)
-			.scan(applyModificationOnTodosData)
-			.map(determineTodosIndexes)
-			.combineLatest(route$, determineFilterWithRoute)
+			.scan(function (todosData, modification) {
+				return modification(todosData);
+			})
+			.map(function (todosData) {
+				todosData.list.forEach(function(todoData, index) {
+					todoData.index = index;
+				});
+				return todosData;
+			})
+			.combineLatest(route$, function (todosData, route) {
+				todosData.filter = route.replace('/', '').trim();
+				todosData.filterFn = getFilterFn(route);
+				return todosData;
+			})
 			.doOnNext(function (todosData) {
 				localStorage.setItem('todos-cycle', JSON.stringify(todosData))
 			})

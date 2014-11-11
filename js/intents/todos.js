@@ -1,17 +1,6 @@
 'use strict';
 /*global Cycle */
 
-var ViewInterface = [
-	'newTodoKeyUp$',
-	'clearCompletedClicks$',
-	'toggleAllClicks$',
-	'todoToggleClicks$',
-	'todoLabelDblClicks$',
-	'editTodoKeyUp$',
-	'editTodoBlur$',
-	'todoDestroyClicks$'
-];
-
 var ENTER_KEY = 13;
 var ESC_KEY = 27;
 
@@ -34,6 +23,11 @@ function getParentTodoId(event) {
 function toEmptyString() {
 	return '';
 }
+
+var ViewInterface = ['newTodoKeyUp$', 'clearCompletedClicks$', 'editTodoKeyUp$',
+	'editTodoBlur$', 'toggleAllClicks$', 'todoToggleClicks$',
+	'todoLabelDblClicks$', 'todoDestroyClicks$'
+];
 
 var TodosIntent = Cycle.defineIntent(ViewInterface, function (view) {
 	return {
