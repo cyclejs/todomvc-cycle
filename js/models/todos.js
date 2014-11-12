@@ -1,11 +1,6 @@
 'use strict';
 /*global Cycle */
 
-// The default filter function
-function allowAnything() {
-	return true;
-}
-
 function getFilterFn(route) {
 	switch (route) {
 		case '/active':
@@ -13,7 +8,7 @@ function getFilterFn(route) {
 		case '/completed':
 			return function (task) { return task.completed === true; };
 		default:
-			return allowAnything;
+			return function () { return true; }; // allow anything
 	}
 }
 
@@ -30,21 +25,13 @@ function determineFilter(todosData, route) {
 	return todosData;
 }
 
-var storedTodosData = localStorage.getItem('todos-cycle');
-
-var initialTodosData = storedTodosData ? JSON.parse(storedTodosData) :
-	{list: [], input: '', filter: '', filterFn: allowAnything};
-
-initialTodosData.list.forEach(function (todoData) {
-	todoData.editing = false;
-});
-
 var IntentInterface = ['insertTodo$', 'deleteTodo$', 'toggleTodo$',
 	'toggleAll$', 'clearInput$', 'deleteCompleteds$', 'startEditTodo$',
 	'editTodo$', 'doneEditing$'
 ];
 
-var TodosModel = Cycle.defineModel(IntentInterface, function (intent) {
+var TodosModel = Cycle.defineModel(IntentInterface, ['todosData$'],
+	function (intent, initial) {
 	var route$ = Rx.Observable.fromEvent(window, 'hashchange')
 		.map(function (event) {
 			return event.newURL.match(/\#[^\#]*$/)[0].replace('#', '');
@@ -151,7 +138,7 @@ var TodosModel = Cycle.defineModel(IntentInterface, function (intent) {
 
 	return {
 		todos$: modifications$
-			.startWith(initialTodosData)
+			.merge(initial.todosData$)
 			.scan(function (todosData, modification) {
 				return modification(todosData);
 			})

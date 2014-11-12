@@ -2,4 +2,6 @@
 /*global Cycle */
 
 Cycle.renderEvery(TodosView.vtree$, '#todoapp');
-Cycle.link(TodosModel, TodosView, TodosIntent);
+TodosIntent.inject(TodosView);
+TodosView.inject(TodosModel);
+TodosModel.inject(TodosIntent, InitialTodosModel);
