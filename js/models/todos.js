@@ -144,8 +144,6 @@ var TodosModel = Cycle.defineModel(IntentInterface, ['todosData$'],
 			})
 			.map(determineTodosIndexes)
 			.combineLatest(route$, determineFilter)
-			.doOnNext(function (todosData) {
-				localStorage.setItem('todos-cycle', JSON.stringify(todosData))
-			})
+			.publish().refCount()
 	}
 });
