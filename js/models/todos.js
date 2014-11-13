@@ -27,16 +27,12 @@ function determineFilter(todosData, route) {
 
 var IntentInterface = ['insertTodo$', 'deleteTodo$', 'toggleTodo$',
 	'toggleAll$', 'clearInput$', 'deleteCompleteds$', 'startEditTodo$',
-	'editTodo$', 'doneEditing$'
+	'editTodo$', 'doneEditing$', 'changeRoute$'
 ];
 
 var TodosModel = Cycle.defineModel(IntentInterface, ['todosData$'],
 	function (intent, initial) {
-	var route$ = Rx.Observable.fromEvent(window, 'hashchange')
-		.map(function (event) {
-			return event.newURL.match(/\#[^\#]*$/)[0].replace('#', '');
-		})
-		.startWith(window.location.hash.replace('#', ''));
+	var route$ = Rx.Observable.just('/').merge(intent.changeRoute$);
 
 	var insertTodoMod$ = intent.insertTodo$
 		.map(function (todoTitle) {

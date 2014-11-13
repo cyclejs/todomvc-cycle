@@ -31,6 +31,11 @@ var ViewInterface = ['newTodoKeyUp$', 'clearCompletedClicks$', 'editTodoKeyUp$',
 
 var TodosIntent = Cycle.defineIntent(ViewInterface, function (view) {
 	return {
+		changeRoute$: Rx.Observable.fromEvent(window, 'hashchange')
+			.map(function (event) {
+				return event.newURL.match(/\#[^\#]*$/)[0].replace('#', '');
+			})
+			.startWith(window.location.hash.replace('#', '')),
 		insertTodo$: view.newTodoKeyUp$
 			.filter(function (ev) {
 				var trimmedVal = String(ev.target.value).trim();
