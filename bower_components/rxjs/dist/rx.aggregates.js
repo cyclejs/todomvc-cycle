@@ -46,7 +46,11 @@
     defaultSubComparer = helpers.defaultSubComparer,
     isFunction = helpers.isFunction,
     isPromise = helpers.isPromise,
-    observableFromPromise = Observable.fromPromise;
+    isArrayLike = helpers.isArrayLike,
+    isIterable = helpers.isIterable,
+    observableFromPromise = Observable.fromPromise,
+    observableFrom = Observable.from,
+    deprecate = helpers.deprecate;
 
   // Defaults
   var argumentOutOfRange = 'Argument out of range',
@@ -115,11 +119,13 @@
   /**
    * Applies an accumulator function over an observable sequence, returning the result of the aggregation as a single element in the result sequence. The specified seed value is used as the initial accumulator value.
    * For aggregation behavior with incremental intermediate results, see Observable.scan.
+   * @deprecated Use #reduce instead
    * @param {Mixed} [seed] The initial accumulator value.
    * @param {Function} accumulator An accumulator function to be invoked on each element.
    * @returns {Observable} An observable sequence containing a single element with the final accumulator value.
    */
   observableProto.aggregate = function () {
+    deprecate('aggregate', 'reduce');
     var seed, hasSeed, accumulator;
     if (arguments.length === 2) {
       seed = arguments[0];
@@ -147,28 +153,31 @@
     return hasSeed ? this.scan(seed, accumulator).startWith(seed).finalValue() : this.scan(accumulator).finalValue();
   };
 
-    /**
-     * Determines whether any element of an observable sequence satisfies a condition if present, else if any items are in the sequence.
-     * @example
-     * var result = source.any();
-     * var result = source.any(function (x) { return x > 3; });
-     * @param {Function} [predicate] A function to test each element for a condition.
-     * @returns {Observable} An observable sequence containing a single element determining whether any elements in the source sequence pass the test in the specified predicate if given, else if any items are in the sequence.
-     */
-    observableProto.some = observableProto.any = function (predicate, thisArg) {
-        var source = this;
-        return predicate ?
-            source.where(predicate, thisArg).any() :
-            new AnonymousObservable(function (observer) {
-                return source.subscribe(function () {
-                    observer.onNext(true);
-                    observer.onCompleted();
-                }, observer.onError.bind(observer), function () {
-                    observer.onNext(false);
-                    observer.onCompleted();
-                });
-            });
-    };
+  /**
+   * Determines whether any element of an observable sequence satisfies a condition if present, else if any items are in the sequence.
+   * @param {Function} [predicate] A function to test each element for a condition.
+   * @returns {Observable} An observable sequence containing a single element determining whether any elements in the source sequence pass the test in the specified predicate if given, else if any items are in the sequence.
+   */
+  observableProto.some = function (predicate, thisArg) {
+    var source = this;
+    return predicate ?
+      source.filter(predicate, thisArg).some() :
+      new AnonymousObservable(function (observer) {
+        return source.subscribe(function () {
+          observer.onNext(true);
+          observer.onCompleted();
+        }, observer.onError.bind(observer), function () {
+          observer.onNext(false);
+          observer.onCompleted();
+        });
+      });
+  };
+
+  /** @deprecated use #some instead */
+  observableProto.any = function () {
+    deprecate('any', 'some');
+    return this.some.apply(this, arguments);
+  };
 
   /**
    * Determines whether an observable sequence is empty.
@@ -178,22 +187,21 @@
     return this.any().map(not);
   };
 
-    /**
-     * Determines whether all elements of an observable sequence satisfy a condition.
-     *
-     * 1 - res = source.all(function (value) { return value.length > 3; });
-     * @memberOf Observable#
-     * @param {Function} [predicate] A function to test each element for a condition.
-     * @param {Any} [thisArg] Object to use as this when executing callback.
-     * @returns {Observable} An observable sequence containing a single element determining whether all elements in the source sequence pass the test in the specified predicate.
-     */
-    observableProto.every = observableProto.all = function (predicate, thisArg) {
-        return this.where(function (v) {
-            return !predicate(v);
-        }, thisArg).any().select(function (b) {
-            return !b;
-        });
-    };
+  /**
+   * Determines whether all elements of an observable sequence satisfy a condition.
+   * @param {Function} [predicate] A function to test each element for a condition.
+   * @param {Any} [thisArg] Object to use as this when executing callback.
+   * @returns {Observable} An observable sequence containing a single element determining whether all elements in the source sequence pass the test in the specified predicate.
+   */
+  observableProto.every = function (predicate, thisArg) {
+    return this.filter(function (v) { return !predicate(v); }, thisArg).some().map(not);
+  };
+
+  /** @deprecated use #every instead */
+  observableProto.all = function () {
+    deprecate('all', 'every');
+    return this.every.apply(this, arguments);
+  };
 
   /**
    * Determines whether an observable sequence contains a specified element with an optional equality comparer.
@@ -277,6 +285,7 @@
         });
     });
   };
+
   /**
    * Computes the sum of a sequence of values that are obtained by invoking an optional transform function on each element of the input sequence, else if not specified computes the sum on each item in the sequence.
    * @example
@@ -289,68 +298,62 @@
   observableProto.sum = function (keySelector, thisArg) {
     return keySelector && isFunction(keySelector) ?
       this.map(keySelector, thisArg).sum() :
-      this.aggregate(0, function (prev, curr) {
+      this.reduce(function (prev, curr) {
         return prev + curr;
-      });
+      }, 0);
   };
 
-    /**
-     * Returns the elements in an observable sequence with the minimum key value according to the specified comparer.
-     * @example
-     * var res = source.minBy(function (x) { return x.value; });
-     * var res = source.minBy(function (x) { return x.value; }, function (x, y) { return x - y; });
-     * @param {Function} keySelector Key selector function.
-     * @param {Function} [comparer] Comparer used to compare key values.
-     * @returns {Observable} An observable sequence containing a list of zero or more elements that have a minimum key value.
-     */
-    observableProto.minBy = function (keySelector, comparer) {
-        comparer || (comparer = defaultSubComparer);
-        return extremaBy(this, keySelector, function (x, y) {
-            return comparer(x, y) * -1;
-        });
-    };
+  /**
+   * Returns the elements in an observable sequence with the minimum key value according to the specified comparer.
+   * @example
+   * var res = source.minBy(function (x) { return x.value; });
+   * var res = source.minBy(function (x) { return x.value; }, function (x, y) { return x - y; });
+   * @param {Function} keySelector Key selector function.
+   * @param {Function} [comparer] Comparer used to compare key values.
+   * @returns {Observable} An observable sequence containing a list of zero or more elements that have a minimum key value.
+   */
+  observableProto.minBy = function (keySelector, comparer) {
+    comparer || (comparer = defaultSubComparer);
+    return extremaBy(this, keySelector, function (x, y) { return comparer(x, y) * -1; });
+  };
 
-    /**
-     * Returns the minimum element in an observable sequence according to the optional comparer else a default greater than less than check.
-     * @example
-     * var res = source.min();
-     * var res = source.min(function (x, y) { return x.value - y.value; });
-     * @param {Function} [comparer] Comparer used to compare elements.
-     * @returns {Observable} An observable sequence containing a single element with the minimum element in the source sequence.
-     */
-    observableProto.min = function (comparer) {
-        return this.minBy(identity, comparer).select(function (x) {
-            return firstOnly(x);
-        });
-    };
+  /**
+   * Returns the minimum element in an observable sequence according to the optional comparer else a default greater than less than check.
+   * @example
+   * var res = source.min();
+   * var res = source.min(function (x, y) { return x.value - y.value; });
+   * @param {Function} [comparer] Comparer used to compare elements.
+   * @returns {Observable} An observable sequence containing a single element with the minimum element in the source sequence.
+   */
+  observableProto.min = function (comparer) {
+    return this.minBy(identity, comparer).map(function (x) { return firstOnly(x); });
+  };
 
-    /**
-     * Returns the elements in an observable sequence with the maximum  key value according to the specified comparer.
-     * @example
-     * var res = source.maxBy(function (x) { return x.value; });
-     * var res = source.maxBy(function (x) { return x.value; }, function (x, y) { return x - y;; });
-     * @param {Function} keySelector Key selector function.
-     * @param {Function} [comparer]  Comparer used to compare key values.
-     * @returns {Observable} An observable sequence containing a list of zero or more elements that have a maximum key value.
-     */
-    observableProto.maxBy = function (keySelector, comparer) {
-        comparer || (comparer = defaultSubComparer);
-        return extremaBy(this, keySelector, comparer);
-    };
+  /**
+   * Returns the elements in an observable sequence with the maximum  key value according to the specified comparer.
+   * @example
+   * var res = source.maxBy(function (x) { return x.value; });
+   * var res = source.maxBy(function (x) { return x.value; }, function (x, y) { return x - y;; });
+   * @param {Function} keySelector Key selector function.
+   * @param {Function} [comparer]  Comparer used to compare key values.
+   * @returns {Observable} An observable sequence containing a list of zero or more elements that have a maximum key value.
+   */
+  observableProto.maxBy = function (keySelector, comparer) {
+    comparer || (comparer = defaultSubComparer);
+    return extremaBy(this, keySelector, comparer);
+  };
 
-    /**
-     * Returns the maximum value in an observable sequence according to the specified comparer.
-     * @example
-     * var res = source.max();
-     * var res = source.max(function (x, y) { return x.value - y.value; });
-     * @param {Function} [comparer] Comparer used to compare elements.
-     * @returns {Observable} An observable sequence containing a single element with the maximum element in the source sequence.
-     */
-    observableProto.max = function (comparer) {
-        return this.maxBy(identity, comparer).select(function (x) {
-            return firstOnly(x);
-        });
-    };
+  /**
+   * Returns the maximum value in an observable sequence according to the specified comparer.
+   * @example
+   * var res = source.max();
+   * var res = source.max(function (x, y) { return x.value - y.value; });
+   * @param {Function} [comparer] Comparer used to compare elements.
+   * @returns {Observable} An observable sequence containing a single element with the maximum element in the source sequence.
+   */
+  observableProto.max = function (comparer) {
+    return this.maxBy(identity, comparer).map(function (x) { return firstOnly(x); });
+  };
 
   /**
    * Computes the average of an observable sequence of values that are in the sequence or obtained by invoking a transform function on each element of the input sequence if present.
@@ -374,28 +377,6 @@
       });
   };
 
-  function sequenceEqualArray(first, second, comparer) {
-    return new AnonymousObservable(function (observer) {
-      var count = 0, len = second.length;
-      return first.subscribe(function (value) {
-        var equal = false;
-        try {
-          count < len && (equal = comparer(value, second[count++]));
-        } catch (e) {
-          observer.onError(e);
-          return;
-        }
-        if (!equal) {
-          observer.onNext(false);
-          observer.onCompleted();
-        }
-      }, observer.onError.bind(observer), function () {
-        observer.onNext(count === len);
-        observer.onCompleted();
-      });
-    });
-  }
-
   /**
    *  Determines whether two sequences are equal by comparing the elements pairwise using a specified equality comparer.
    *
@@ -411,9 +392,6 @@
   observableProto.sequenceEqual = function (second, comparer) {
     var first = this;
     comparer || (comparer = defaultComparer);
-    if (Array.isArray(second)) {
-      return sequenceEqualArray(first, second, comparer);
-    }
     return new AnonymousObservable(function (observer) {
       var donel = false, doner = false, ql = [], qr = [];
       var subscription1 = first.subscribe(function (x) {
@@ -449,6 +427,7 @@
         }
       });
 
+      (isArrayLike(second) || isIterable(second)) && (second = observableFrom(second));
       isPromise(second) && (second = observableFromPromise(second));
       var subscription2 = second.subscribe(function (x) {
         var equal;
@@ -694,7 +673,7 @@
                 var shouldRun;
                 try {
                     shouldRun = predicate.call(thisArg, x, i, source);
-                } catch(e) {
+                } catch (e) {
                     observer.onError(e);
                     return;
                 }

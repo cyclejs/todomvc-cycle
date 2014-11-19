@@ -109,17 +109,22 @@
 
   function combineLatestSource(source, subject, resultSelector) {
     return new AnonymousObservable(function (observer) {
-      var n = 2,
-        hasValue = [false, false],
+      var hasValue = [false, false],
         hasValueAll = false,
         isDone = false,
-        values = new Array(n);
+        values = new Array(2),
+        err;
 
       function next(x, i) {
         values[i] = x
         var res;
         hasValue[i] = true;
         if (hasValueAll || (hasValueAll = hasValue.every(identity))) {
+          if (err) {
+            observer.onError(err);
+            return;
+          }
+
           try {
             res = resultSelector.apply(null, values);
           } catch (ex) {
@@ -127,7 +132,8 @@
             return;
           }
           observer.onNext(res);
-        } else if (isDone) {
+        }
+        if (isDone && values[1]) {
           observer.onCompleted();
         }
       }
@@ -137,23 +143,33 @@
           function (x) {
             next(x, 0);
           },
-          observer.onError.bind(observer),
+          function (e) {
+            if (values[1]) {
+              observer.onError(e);
+            } else {
+              err = e;
+            }
+          },
           function () {
             isDone = true;
-            observer.onCompleted();
+            values[1] && observer.onCompleted();
           }),
         subject.subscribe(
           function (x) {
             next(x, 1);
           },
-          observer.onError.bind(observer))
+          observer.onError.bind(observer),
+          function () {
+            isDone = true;
+            next(true, 1);
+          })
         );
     });
   }
 
-  var PausableBufferedObservable = (function (_super) {
+  var PausableBufferedObservable = (function (__super__) {
 
-    inherits(PausableBufferedObservable, _super);
+    inherits(PausableBufferedObservable, __super__);
 
     function subscribe(observer) {
       var q = [], previousShouldFire;
@@ -213,7 +229,7 @@
         this.pauser = this.controller;
       }
 
-      _super.call(this, subscribe);
+      __super__.call(this, subscribe);
     }
 
     PausableBufferedObservable.prototype.pause = function () {

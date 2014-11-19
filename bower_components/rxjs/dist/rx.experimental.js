@@ -76,7 +76,15 @@
 
   var doneEnumerator = Rx.doneEnumerator = { done: true, value: undefined };
 
-  Rx.iterator = $iterator$;
+  var isIterable = Rx.helpers.isIterable = function (o) {
+    return o[$iterator$] !== undefined;
+  }
+
+  var isArrayLike = Rx.helpers.isArrayLike = function (o) {
+    return o && o.length !== undefined;
+  }
+
+  Rx.helpers.iterator = $iterator$;
 
   function enumerableWhile(condition, source) {
     return new Enumerable(function () {
@@ -430,7 +438,7 @@
       var self = this, g = new CompositeDisposable();
       g.add(currentThreadScheduler.schedule(function () {
         observer.onNext(self.head);
-        g.add(self.tail.mergeObservable().subscribe(observer));
+        g.add(self.tail.mergeAll().subscribe(observer));
       }));
 
       return g;

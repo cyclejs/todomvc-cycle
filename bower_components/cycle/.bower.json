@@ -1,6 +1,6 @@
 {
   "name": "cycle",
-  "version": "0.4.0",
+  "version": "0.5.2",
   "homepage": "https://github.com/staltz/cycle",
   "authors": [
     "Andre Staltz"
@@ -20,16 +20,21 @@
     "**/.*",
     "node_modules",
     "bower_components",
+    "scripts",
+    "examples",
+    "CONTRIBUTING.md",
+    "src",
+    "package.json",
     "test",
     "tests"
   ],
-  "_release": "0.4.0",
+  "_release": "0.5.2",
   "_resolution": {
     "type": "version",
-    "tag": "v0.4.0",
-    "commit": "6c520957a68124b6cedc37df91091ec2b98f150b"
+    "tag": "v0.5.2",
+    "commit": "f2ed3c21946cb019abd5bba4bb3647d5ceb3f484"
   },
   "_source": "git://github.com/staltz/cycle.git",
-  "_target": "0.4.0",
+  "_target": "0.5.2",
   "_originalSource": "cycle"
 }

@@ -53,7 +53,7 @@
     isPromise = helpers.isPromise,
     isScheduler = helpers.isScheduler,
     observableFromPromise = Observable.fromPromise,
-    notDefined = helpers.notDefined;
+    deprecate = helpers.deprecate;
 
   function observableTimerDate(dueTime, scheduler) {
     return new AnonymousObservable(function (observer) {
@@ -236,16 +236,11 @@
 
   /**
    *  Ignores values from an observable sequence which are followed by another value before dueTime.
-   *
-   * @example
-   *  1 - res = source.throttle(5000); // 5 seconds
-   *  2 - res = source.throttle(5000, scheduler);
-   *
-   * @param {Number} dueTime Duration of the throttle period for each value (specified as an integer denoting milliseconds).
-   * @param {Scheduler} [scheduler]  Scheduler to run the throttle timers on. If not specified, the timeout scheduler is used.
-   * @returns {Observable} The throttled sequence.
+   * @param {Number} dueTime Duration of the debounce period for each value (specified as an integer denoting milliseconds).
+   * @param {Scheduler} [scheduler]  Scheduler to run the debounce timers on. If not specified, the timeout scheduler is used.
+   * @returns {Observable} The debounced sequence.
    */
-  observableProto.throttle = function (dueTime, scheduler) {
+  observableProto.debounce = observableProto.throttleWithTimeout = function (dueTime, scheduler) {
     isScheduler(scheduler) || (scheduler = timeoutScheduler);
     var source = this;
     return new AnonymousObservable(function (observer) {
@@ -278,6 +273,14 @@
         });
       return new CompositeDisposable(subscription, cancelable);
     });
+  };
+
+  /**
+   * @deprecated use #debounce or #throttleWithTimeout instead.
+   */
+  observableProto.throttle = function(dueTime, scheduler) {
+    deprecate('throttle', 'debounce or throttleWithTimeout');
+    return this.debounce(dueTime, scheduler);
   };
 
   /**
@@ -346,11 +349,11 @@
       groupDisposable.add(source.subscribe(
         function (x) {
           for (var i = 0, len = q.length; i < len; i++) { q[i].onNext(x); }
-        }, 
+        },
         function (e) {
           for (var i = 0, len = q.length; i < len; i++) { q[i].onError(e); }
           observer.onError(e);
-        }, 
+        },
         function () {
           for (var i = 0, len = q.length; i < len; i++) { q[i].onCompleted(); }
           observer.onCompleted();
@@ -391,7 +394,7 @@
           createTimer(newId);
         }));
       }
-      
+
       observer.onNext(addRef(s, refCountDisposable));
       createTimer(0);
 
@@ -408,7 +411,7 @@
             observer.onNext(addRef(s, refCountDisposable));
           }
           newWindow && createTimer(newId);
-        }, 
+        },
         function (e) {
           s.onError(e);
           observer.onError(e);
@@ -532,7 +535,7 @@
    * @param {Scheduler} [scheduler]  Scheduler to run the sampling timer on. If not specified, the timeout scheduler is used.
    * @returns {Observable} Sampled observable sequence.
    */
-  observableProto.sample = function (intervalOrSampler, scheduler) {
+  observableProto.sample = observableProto.throttleLatest = function (intervalOrSampler, scheduler) {
     isScheduler(scheduler) || (scheduler = timeoutScheduler);
     return typeof intervalOrSampler === 'number' ?
       sampleObservable(this, observableinterval(intervalOrSampler, scheduler)) :
@@ -852,22 +855,18 @@
     };
 
   /**
-   *  Ignores values from an observable sequence which are followed by another value within a computed throttle duration.
-   *
-   * @example
-   *  1 - res = source.delayWithSelector(function (x) { return Rx.Scheduler.timer(x + x); });
-   *
-   * @param {Function} throttleDurationSelector Selector function to retrieve a sequence indicating the throttle duration for each given element.
-   * @returns {Observable} The throttled sequence.
+   * Ignores values from an observable sequence which are followed by another value within a computed throttle duration.
+   * @param {Function} durationSelector Selector function to retrieve a sequence indicating the throttle duration for each given element.
+   * @returns {Observable} The debounced sequence.
    */
-  observableProto.throttleWithSelector = function (throttleDurationSelector) {
+  observableProto.debounceWithSelector = function (durationSelector) {
     var source = this;
     return new AnonymousObservable(function (observer) {
       var value, hasValue = false, cancelable = new SerialDisposable(), id = 0;
       var subscription = source.subscribe(function (x) {
         var throttle;
         try {
-          throttle = throttleDurationSelector(x);
+          throttle = durationSelector(x);
         } catch (e) {
           observer.onError(e);
           return;
@@ -903,6 +902,11 @@
       });
       return new CompositeDisposable(subscription, cancelable);
     });
+  };
+
+  observableProto.throttleWithSelector = function () {
+    deprecate('throttleWithSelector', 'debounceWithSelector');
+    return this.debounceWithSelector.apply(this, arguments);
   };
 
   /**
@@ -1096,6 +1100,33 @@
       return new CompositeDisposable(
         scheduler[schedulerMethod](endTime, observer.onCompleted.bind(observer)),
         source.subscribe(observer));
+    });
+  };
+
+  /**
+   * Returns an Observable that emits only the first item emitted by the source Observable during sequential time windows of a specified duration.
+   * @param {Number} windowDuration time to wait before emitting another item after emitting the last item
+   * @param {Scheduler} [scheduler] the Scheduler to use internally to manage the timers that handle timeout for each item. If not provided, defaults to Scheduler.timeout.
+   * @returns {Observable} An Observable that performs the throttle operation.
+   */
+  observableProto.throttleFirst = function (windowDuration, scheduler) {
+    isScheduler(scheduler) || (scheduler = timeoutScheduler);
+    var duration = +windowDuration || 0;
+    if (duration <= 0) { throw new RangeError('windowDuration cannot be less or equal zero.'); }
+    var source = this;
+    return new AnonymousObservable(function (observer) {
+      var lastOnNext = 0;
+      return source.subscribe(
+        function (x) {
+          var now = scheduler.now();
+          if (lastOnNext === 0 || now - lastOnNext >= duration) {
+            lastOnNext = now;
+            observer.onNext(x);
+          }
+        },
+        observer.onError.bind(observer),
+        observer.onCompleted.bind(observer)
+      );
     });
   };
 

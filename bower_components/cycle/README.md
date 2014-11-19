@@ -21,28 +21,25 @@ DOM Rendering.
 [![Build Status](https://travis-ci.org/staltz/cycle.svg?branch=master)](https://travis-ci.org/staltz/cycle)
 [![Dependency Status](https://david-dm.org/staltz/cycle.svg)](https://david-dm.org/staltz/cycle)
 [![devDependency Status](https://david-dm.org/staltz/cycle/dev-status.svg)](https://david-dm.org/staltz/cycle#info=devDependencies)
+[![Code Climate](https://codeclimate.com/github/staltz/cycle/badges/gpa.svg)](https://codeclimate.com/github/staltz/cycle)
 
 ## Example
 
 ```javascript
 var HelloModel = Cycle.defineModel(['changeName$'], function (intent) {
-  return {
-    name$: intent.changeName$.startWith('')
-  };
+  return {name$: intent.changeName$.startWith('')};
 });
 
 var HelloView = Cycle.defineView(['name$'], function (model) {
+  var h = Cycle.h;
   return {
     vtree$: model.name$
       .map(function (name) {
-        return Cycle.h('div', {}, [
-          Cycle.h('label', 'Name:'),
-          Cycle.h('input', {
-            'attributes': {'type': 'text'},
-            'ev-input': 'inputText$'
-          }),
-          Cycle.h('hr'),
-          Cycle.h('h1', 'Hello ' + name)
+        return h('div', [
+          h('label', 'Name:'),
+          h('input', {attributes: {type: 'text'}, 'ev-input': 'inputText$'}),
+          h('hr'),
+          h('h1', 'Hello ' + name)
         ]);
       }),
     events: ['inputText$']
@@ -51,20 +48,21 @@ var HelloView = Cycle.defineView(['name$'], function (model) {
 
 var HelloIntent = Cycle.defineIntent(['inputText$'], function (view) {
   return {
-    changeName$: view.inputText$
-      .map(function (ev) { return ev.target.value; })
+    changeName$: view.inputText$.map(function (ev) { return ev.target.value; })
   };
 });
 
 Cycle.renderEvery(HelloView.vtree$, '.js-container');
-Cycle.link(HelloModel, HelloView, HelloIntent);
+Cycle.circularInject(HelloModel, HelloView, HelloIntent);
 ```
 
 Notice that each of the 3 components has a neighbour component as input, and each outputs
 an object mostly containing Rx Observables. At the bottom, `Cycle.renderEvery` subscribes
 to changes of `HelloView.vtree$` and renders those virtual elements into `.js-container`
-in the DOM. `Cycle.link` just ties all three Model, View, and Intent together by telling
-them that they depend on each other circularly.
+in the DOM. `Cycle.circularInject` just ties all three Model, View, and Intent together by
+telling them that they depend on each other circularly.
+
+For an advanced example, check out [TodoMVC implemented in Cycle.js](https://github.com/staltz/todomvc-cycle).
 
 ## Installing through npm
 
@@ -95,7 +93,7 @@ are a couple of strong reasons:
   create coupling. You can write code with single responsibilities throughout. For
   instance, the View just takes model data and renders virtual elements, it doesn't even
   have callbacks to handle events.
-- **Superb testability.** Everything is a JavaScript function or a [BackwardFunction](https://github.com/staltz/cycle/blob/master/docs/backward-functions.md),
+- **Superb testability.** Everything is a JavaScript function or a [DataFlowNode](https://github.com/staltz/cycle/blob/master/docs/data-flow-nodes.md),
   so testing is mostly a matter of feeding input and inspecting the output. You can even
   test styles if you use functions to output your styles instead of using CSS files.
 - **Rendering separated from View.** Contrary to what you expect, a View in Cycle.js does
@@ -112,6 +110,10 @@ are a couple of strong reasons:
 Cycle is in alpha mode, many changes to the API will likely occur before v1.0 is released.
 Use this framework only for experiments before that. PS: we don't want to stay as alpha
 forever, either. ;)
+
+Prior to v1.0.0, the versions will follow the convention: improvements that break backwards
+compatibility increment the minor number, any other improvements will increment the patch
+number. After v1.0.0, we will follow [http://semver.org/](semver).
 
 ## LICENSE
 
