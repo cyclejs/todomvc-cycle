@@ -30,7 +30,7 @@ var IntentInterface = ['insertTodo$', 'deleteTodo$', 'toggleTodo$',
 	'editTodo$', 'doneEditing$', 'changeRoute$'
 ];
 
-var TodosModel = Cycle.defineModel(IntentInterface, ['todosData$'],
+var TodosModel = Cycle.createModel(IntentInterface, ['todosData$'],
 	function (intent, initial) {
 	var route$ = Rx.Observable.just('/').merge(intent.changeRoute$);
 

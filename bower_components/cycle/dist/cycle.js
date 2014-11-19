@@ -17132,9 +17132,119 @@ function parseTag(tag, props) {
 
 },{}],64:[function(require,module,exports){
 'use strict';
+var DataFlowNode = require('./data-flow-node');
+var errors = require('./errors');
+
+function createIntent() {
+  var intent = DataFlowNode.apply({}, arguments);
+  intent = errors.customInterfaceErrorMessageInInject(intent,
+    'Intent expects View to have the required property '
+  );
+  var originalArgs = arguments;
+  intent.clone = function () {
+    return createIntent.apply({}, originalArgs);
+  };
+  return intent;
+}
+
+module.exports = createIntent;
+
+},{"./data-flow-node":68,"./errors":70}],65:[function(require,module,exports){
+'use strict';
+var DataFlowNode = require('./data-flow-node');
+var errors = require('./errors');
+
+function createModel() {
+  var model = DataFlowNode.apply({}, arguments);
+  model = errors.customInterfaceErrorMessageInInject(model,
+    'Model expects Intent to have the required property '
+  );
+  var originalArgs = arguments;
+  model.clone = function () {
+    return createModel.apply({}, originalArgs);
+  };
+  return model;
+}
+
+module.exports = createModel;
+
+},{"./data-flow-node":68,"./errors":70}],66:[function(require,module,exports){
+'use strict';
+var Rx = require('rx');
+var DataFlowNode = require('./data-flow-node');
+var errors = require('./errors');
+
+function getFunctionForwardIntoStream(stream) {
+  return function forwardIntoStream(ev) { stream.onNext(ev); };
+}
+
+// traverse the vtree, replacing the value of 'ev-*' fields with
+// `function (ev) { view[$PREVIOUS_VALUE].onNext(ev); }`
+function replaceStreamNameWithForwardFunction(vtree, view) {
+  if (vtree && vtree.type === 'VirtualNode' && typeof vtree.properties !== 'undefined') {
+    for (var key in vtree.properties) {
+      if (vtree.properties.hasOwnProperty(key) &&
+        typeof key === 'string' && key.search(/^ev\-/) === 0)
+      {
+        var streamName = vtree.properties[key].value;
+        if (view[streamName]) {
+          vtree.properties[key].value = getFunctionForwardIntoStream(view[streamName]);
+        } else {
+          throw new Error('VTree uses event hook `' + streamName + '` which should ' +
+            'have been defined in `events` array of the View.'
+          );
+        }
+      }
+    }
+  }
+  if (Array.isArray(vtree.children)) {
+    for (var i = 0; i < vtree.children.length; i++) {
+      replaceStreamNameWithForwardFunction(vtree.children[i], view);
+    }
+  }
+}
+
+function createView() {
+  var view = DataFlowNode.apply({}, arguments);
+  view = errors.customInterfaceErrorMessageInInject(view,
+    'View expects Model to have the required property '
+  );
+  if (typeof view.events === 'undefined') {
+    throw new Error('View must define `events` array with names of event streams');
+  }
+  if (typeof view.vtree$ === 'undefined') {
+    throw new Error('View must define `vtree$` Observable emitting virtual DOM elements');
+  }
+  if (view.events) {
+    for (var i = view.events.length - 1; i >= 0; i--) {
+      view[view.events[i]] = new Rx.Subject();
+    }
+    delete view.events;
+  }
+  view.vtree$ = view.vtree$.map(function (vtree) {
+    if (vtree.type !== 'VirtualNode' || vtree.tagName === 'undefined') {
+      throw new Error('View `vtree$` must emit only VirtualNode instances. ' +
+        'Hint: create them with Cycle.h()'
+      );
+    }
+    replaceStreamNameWithForwardFunction(vtree, view);
+    return vtree;
+  });
+  var originalArgs = arguments;
+  view.clone = function cloneView() {
+    return createView.apply({}, originalArgs);
+  };
+  return view;
+}
+
+module.exports = createView;
+
+},{"./data-flow-node":68,"./errors":70,"rx":21}],67:[function(require,module,exports){
+'use strict';
 var h = require('virtual-hyperscript');
 var Rx = require('rx');
 var DataFlowNode = require('./data-flow-node');
+var DataFlowSink = require('./data-flow-node');
 var Rendering = require('./rendering');
 var PropertyHook = require('./property-hook');
 
@@ -17153,20 +17263,32 @@ var Cycle = {
    * @param {Array<String>} [inputInterface1] property names that are expected to exist
    * as RxJS Observables in the first input parameter for `definitionFn`.
    * @param {} ...
-   * @param {Function} definitionFn a function expecting objects as parameter (as many as
+   * @param {Function} definitionFn a function expecting objects as parameters (as many as
    * there are interfaces), satisfying the type requirement given by `inputInterface1`,
    * `inputInterface2`, etc. Should return an object containing RxJS Observables as
    * properties.
    * @return {DataFlowNode} a DataFlowNode, containing a `inject(inputs...)` function.
    */
-  defineDataFlowNode: function () {
+  createDataFlowNode: function createDataFlowNode() {
     return DataFlowNode.apply({}, arguments);
+  },
+
+  /**
+   * Creates a DataFlowSink, given a definition function that receives injected inputs.
+   *
+   * @param {Function} definitionFn a function expecting some DataFlowNode(s) as
+   * arguments. The function should subscribe to Observables of the input DataFlowNodes
+   * and should return a `Rx.Disposable` subscription.
+   * @return {DataFlowSink} a DataFlowSink, containing a `inject(inputs...)` function.
+   */
+  createDataFlowSink: function createDataFlowSink() {
+    return DataFlowSink.apply({}, arguments);
   },
 
   /**
    * Returns a DataFlowNode representing a Model, having some Intent as input.
    *
-   * Is a specialized case of `defineDataFlowNode()`, hence can also receive multiple
+   * Is a specialized case of `createDataFlowNode()`, hence can also receive multiple
    * interfaces and multiple inputs in `definitionFn`.
    *
    * @param {Array<String>} [intentInterface] property names that are expected to exist as
@@ -17175,14 +17297,14 @@ var Cycle = {
    * Should return an object containing RxJS Observables as properties.
    * @return {DataFlowNode} a DataFlowNode representing a Model, containing a
    * `inject(intent)` function.
-   * @function defineModel
+   * @function createModel
    */
-  defineModel: require('./define-model'),
+  createModel: require('./create-model'),
 
   /**
    * Returns a DataFlowNode representing a View, having some Model as input.
    *
-   * Is a specialized case of `defineDataFlowNode()`, hence can also receive multiple
+   * Is a specialized case of `createDataFlowNode()`, hence can also receive multiple
    * interfaces and multiple inputs in `definitionFn`.
    *
    * @param {Array<String>} [modelInterface] property names that are expected to exist as
@@ -17194,14 +17316,14 @@ var Cycle = {
    * should be an Observable emitting instances of VTree (Virtual DOM elements).
    * @return {DataFlowNode} a DataFlowNode representing a View, containing a
    * `inject(model)` function.
-   * @function defineView
+   * @function createView
    */
-  defineView: require('./define-view'),
+  createView: require('./create-view'),
 
   /**
    * Returns a DataFlowNode representing an Intent, having some View as input.
    *
-   * Is a specialized case of `defineDataFlowNode()`, hence can also receive multiple
+   * Is a specialized case of `createDataFlowNode()`, hence can also receive multiple
    * interfaces and multiple inputs in `definitionFn`.
    *
    * @param {Array<String>} [viewInterface] property names that are expected to exist as
@@ -17210,21 +17332,22 @@ var Cycle = {
    * Should return an object containing RxJS Observables as properties.
    * @return {DataFlowNode} a DataFlowNode representing an Intent, containing a
    * `inject(view)` function.
-   * @function defineIntent
+   * @function createIntent
    */
-  defineIntent: require('./define-intent'),
+  createIntent: require('./create-intent'),
 
   /**
-   * Renders every virtual element emitted by `vtree$` into the element `container`.
+   * Returns a Renderer (a DataFlowSink) bound to a DOM container element. Contains an
+   * `inject` function that should be called with a View as argument.
    *
-   * @param {Rx.Observable<VirtualNode>} vtree$ an Observable of VTree instances (virtual
-   * DOM elements).
    * @param {(String|HTMLElement)} container the DOM selector for the element (or the
    * element itself) to contain the rendering of the VTrees.
-   * @return {Rx.Disposable} a subscription to the `vtree$` Observable.
-   * @function renderEvery
+   * @return {Renderer} a Renderer object containing an `inject(view)` function.
+   * @function createRenderer
    */
-  renderEvery: Rendering.renderEvery,
+  createRenderer: function createRenderer(container) {
+    return new Rendering.Renderer(container);
+  },
 
   /**
    * Ties together the given input DataFlowNodes, making them be circular dependencies
@@ -17275,14 +17398,12 @@ var Cycle = {
    * This is a helper for creating VTrees in Views.
    * @name h
    */
-  h: h,
-
-  _delegator: Rendering.delegator
+  h: h
 };
 
 module.exports = Cycle;
 
-},{"./data-flow-node":65,"./define-intent":66,"./define-model":67,"./define-view":68,"./property-hook":71,"./rendering":72,"rx":21,"virtual-hyperscript":45}],65:[function(require,module,exports){
+},{"./create-intent":64,"./create-model":65,"./create-view":66,"./data-flow-node":68,"./property-hook":72,"./rendering":73,"rx":21,"virtual-hyperscript":45}],68:[function(require,module,exports){
 'use strict';
 var Rx = require('rx');
 var errors = require('./errors');
@@ -17385,116 +17506,25 @@ function DataFlowNode() {
 
 module.exports = DataFlowNode;
 
-},{"./errors":69,"rx":21}],66:[function(require,module,exports){
+},{"./errors":70,"rx":21}],69:[function(require,module,exports){
 'use strict';
-var DataFlowNode = require('./data-flow-node');
-var errors = require('./errors');
 
-function defineIntent() {
-  var intent = DataFlowNode.apply({}, arguments);
-  intent = errors.customInterfaceErrorMessageInInject(intent,
-    'Intent expects View to have the required property '
-  );
-  var originalArgs = arguments;
-  intent.clone = function () {
-    return defineIntent.apply({}, originalArgs);
+function DataFlowSink(definitionFn) {
+  if (arguments.length !== 1) {
+    throw new Error('DataFlowSink expects only one argument: the definition function.');
+  }
+  if (typeof definitionFn !== 'function') {
+    throw new Error('DataFlowSink expects the argument to be the definition function.');
+  }
+  definitionFn.displayName += '(DataFlowSink defFn)';
+  this.inject = function injectIntoDataFlowSink() {
+    return definitionFn.apply({}, arguments);
   };
-  return intent;
 }
 
-module.exports = defineIntent;
+module.exports = DataFlowSink;
 
-},{"./data-flow-node":65,"./errors":69}],67:[function(require,module,exports){
-'use strict';
-var DataFlowNode = require('./data-flow-node');
-var errors = require('./errors');
-
-function defineModel() {
-  var model = DataFlowNode.apply({}, arguments);
-  model = errors.customInterfaceErrorMessageInInject(model,
-    'Model expects Intent to have the required property '
-  );
-  var originalArgs = arguments;
-  model.clone = function () {
-    return defineModel.apply({}, originalArgs);
-  };
-  return model;
-}
-
-module.exports = defineModel;
-
-},{"./data-flow-node":65,"./errors":69}],68:[function(require,module,exports){
-'use strict';
-var Rx = require('rx');
-var DataFlowNode = require('./data-flow-node');
-var errors = require('./errors');
-
-function getFunctionForwardIntoStream(stream) {
-  return function forwardIntoStream(ev) { stream.onNext(ev); };
-}
-
-// traverse the vtree, replacing the value of 'ev-*' fields with
-// `function (ev) { view[$PREVIOUS_VALUE].onNext(ev); }`
-function replaceStreamNameWithForwardFunction(vtree, view) {
-  if (vtree && vtree.type === 'VirtualNode' && typeof vtree.properties !== 'undefined') {
-    for (var key in vtree.properties) {
-      if (vtree.properties.hasOwnProperty(key) &&
-        typeof key === 'string' && key.search(/^ev\-/) === 0)
-      {
-        var streamName = vtree.properties[key].value;
-        if (view[streamName]) {
-          vtree.properties[key].value = getFunctionForwardIntoStream(view[streamName]);
-        } else {
-          throw new Error('VTree uses event hook `' + streamName + '` which should ' +
-            'have been defined in `events` array of the View.'
-          );
-        }
-      }
-    }
-  }
-  if (Array.isArray(vtree.children)) {
-    for (var i = 0; i < vtree.children.length; i++) {
-      replaceStreamNameWithForwardFunction(vtree.children[i], view);
-    }
-  }
-}
-
-function defineView() {
-  var view = DataFlowNode.apply({}, arguments);
-  view = errors.customInterfaceErrorMessageInInject(view,
-    'View expects Model to have the required property '
-  );
-  if (typeof view.events === 'undefined') {
-    throw new Error('View must define `events` array with names of event streams');
-  }
-  if (typeof view.vtree$ === 'undefined') {
-    throw new Error('View must define `vtree$` Observable emitting virtual DOM elements');
-  }
-  if (view.events) {
-    for (var i = view.events.length - 1; i >= 0; i--) {
-      view[view.events[i]] = new Rx.Subject();
-    }
-    delete view.events;
-  }
-  view.vtree$ = view.vtree$.map(function (vtree) {
-    if (vtree.type !== 'VirtualNode' || vtree.tagName === 'undefined') {
-      throw new Error('View `vtree$` must emit only VirtualNode instances. ' +
-        'Hint: create them with Cycle.h()'
-      );
-    }
-    replaceStreamNameWithForwardFunction(vtree, view);
-    return vtree;
-  });
-  var originalArgs = arguments;
-  view.clone = function cloneView() {
-    return defineView.apply({}, originalArgs);
-  };
-  return view;
-}
-
-module.exports = defineView;
-
-},{"./data-flow-node":65,"./errors":69,"rx":21}],69:[function(require,module,exports){
+},{}],70:[function(require,module,exports){
 'use strict';
 
 function CycleInterfaceError(message, missingMember) {
@@ -17525,14 +17555,14 @@ module.exports = {
   customInterfaceErrorMessageInInject: customInterfaceErrorMessageInInject
 };
 
-},{}],70:[function(require,module,exports){
+},{}],71:[function(require,module,exports){
 (function (global){
 'use strict';
 var Cycle = require('./cycle');
 global.Cycle = Cycle;
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"./cycle":64}],71:[function(require,module,exports){
+},{"./cycle":67}],72:[function(require,module,exports){
 'use strict';
 
 function PropertyHook(fn) {
@@ -17544,7 +17574,7 @@ PropertyHook.prototype.hook = function () {
 
 module.exports = PropertyHook;
 
-},{}],72:[function(require,module,exports){
+},{}],73:[function(require,module,exports){
 'use strict';
 
 var h = require('virtual-hyperscript');
@@ -17553,6 +17583,9 @@ var VDOM = {
   patch: require('virtual-dom/patch')
 };
 var DOMDelegator = require('dom-delegator');
+var DataFlowSink = require('./data-flow-sink');
+
+var delegator = new DOMDelegator();
 
 function isElement(o) {
   return (
@@ -17590,12 +17623,20 @@ function renderEvery(vtree$, container) {
     });
 }
 
-var delegator = new DOMDelegator();
+function Renderer(container) {
+  DataFlowSink.call(this, function injectIntoRenderer(view) {
+    return renderEvery(view.vtree$, container);
+  });
+  this.delegator = delegator;
+}
+
+Renderer.prototype = Object.create(DataFlowSink.prototype);
 
 module.exports = {
+  Renderer: Renderer,
   renderEvery: renderEvery,
   isElement: isElement,
   delegator: delegator
 };
 
-},{"dom-delegator":6,"virtual-dom/diff":22,"virtual-dom/patch":41,"virtual-hyperscript":45}]},{},[70]);
+},{"./data-flow-sink":69,"dom-delegator":6,"virtual-dom/diff":22,"virtual-dom/patch":41,"virtual-hyperscript":45}]},{},[71]);

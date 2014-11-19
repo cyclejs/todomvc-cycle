@@ -1,7 +1,7 @@
 'use strict';
 /*global Cycle */
 
-Cycle.renderEvery(TodosView.vtree$, '#todoapp');
+Cycle.createRenderer('#todoapp').inject(TodosView);
 TodosIntent.inject(TodosView);
 TodosView.inject(TodosModel);
 TodosModel.inject(TodosIntent, InitialTodosModel);

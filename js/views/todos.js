@@ -114,7 +114,7 @@ function vrenderFooter(todosData) {
 	])
 }
 
-var TodosView = Cycle.defineView(['todos$'], function (model) {
+var TodosView = Cycle.createView(['todos$'], function (model) {
 	return {
 		events: [
 			'newTodoKeyUp$', 'toggleAllClicks$', 'clearCompletedClicks$',

@@ -29,7 +29,7 @@ var ViewInterface = ['newTodoKeyUp$', 'clearCompletedClicks$', 'editTodoKeyUp$',
 	'todoLabelDblClicks$', 'todoDestroyClicks$'
 ];
 
-var TodosIntent = Cycle.defineIntent(ViewInterface, function (view) {
+var TodosIntent = Cycle.createIntent(ViewInterface, function (view) {
 	return {
 		changeRoute$: Rx.Observable.fromEvent(window, 'hashchange')
 			.map(function (event) {

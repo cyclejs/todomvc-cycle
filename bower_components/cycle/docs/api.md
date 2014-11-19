@@ -1,17 +1,18 @@
 
 # `Cycle` object API
 
-- [`defineDataFlowNode`](#defineDataFlowNode)
-- [`defineModel`](#defineModel)
-- [`defineView`](#defineView)
-- [`defineIntent`](#defineIntent)
-- [`renderEvery`](#renderEvery)
+- [`createDataFlowNode`](#createDataFlowNode)
+- [`createDataFlowSink`](#createDataFlowSink)
+- [`createModel`](#createModel)
+- [`createView`](#createView)
+- [`createIntent`](#createIntent)
+- [`createRenderer`](#createRenderer)
 - [`circularInject`](#circularInject)
 - [`vdomPropHook`](#vdomPropHook)
 - [`Rx`](#Rx)
 - [`h`](#h)
 
-### <a id="defineDataFlowNode"></a> `defineDataFlowNode([inputInterface1], ..., definitionFn)`
+### <a id="createDataFlowNode"></a> `createDataFlowNode([inputInterface1], ..., definitionFn)`
 
 Creates a DataFlowNode.
 
@@ -27,7 +28,7 @@ to `definitionFn` are objects that should fulfil the respective interfaces.
 
 - `[inputInterface1] :: Array<String>` property names that are expected to exist as RxJS Observables in the first input parameter for `definitionFn`.
 - `...`
-- `definitionFn :: Function` a function expecting objects as parameter (as many as there are interfaces), satisfying the type requirement given by `inputInterface1`,
+- `definitionFn :: Function` a function expecting objects as parameters (as many as there are interfaces), satisfying the type requirement given by `inputInterface1`,
 `inputInterface2`, etc. Should return an object containing RxJS Observables as
 properties.
 
@@ -35,11 +36,24 @@ properties.
 
 *(DataFlowNode)* a DataFlowNode, containing a `inject(inputs...)` function.
 
-### <a id="defineModel"></a> `defineModel([intentInterface], definitionFn)`
+### <a id="createDataFlowSink"></a> `createDataFlowSink(definitionFn)`
+
+Creates a DataFlowSink, given a definition function that receives injected inputs.
+
+#### Arguments:
+
+- `definitionFn :: Function` a function expecting some DataFlowNode(s) as arguments. The function should subscribe to Observables of the input DataFlowNodes
+and should return a `Rx.Disposable` subscription.
+
+#### Return:
+
+*(DataFlowSink)* a DataFlowSink, containing a `inject(inputs...)` function.
+
+### <a id="createModel"></a> `createModel([intentInterface], definitionFn)`
 
 Returns a DataFlowNode representing a Model, having some Intent as input.
 
-Is a specialized case of `defineDataFlowNode()`, hence can also receive multiple
+Is a specialized case of `createDataFlowNode()`, hence can also receive multiple
 interfaces and multiple inputs in `definitionFn`.
 
 #### Arguments:
@@ -51,11 +65,11 @@ interfaces and multiple inputs in `definitionFn`.
 
 *(DataFlowNode)* a DataFlowNode representing a Model, containing a `inject(intent)` function.
 
-### <a id="defineView"></a> `defineView([modelInterface], definitionFn)`
+### <a id="createView"></a> `createView([modelInterface], definitionFn)`
 
 Returns a DataFlowNode representing a View, having some Model as input.
 
-Is a specialized case of `defineDataFlowNode()`, hence can also receive multiple
+Is a specialized case of `createDataFlowNode()`, hence can also receive multiple
 interfaces and multiple inputs in `definitionFn`.
 
 #### Arguments:
@@ -70,11 +84,11 @@ should be an Observable emitting instances of VTree (Virtual DOM elements).
 
 *(DataFlowNode)* a DataFlowNode representing a View, containing a `inject(model)` function.
 
-### <a id="defineIntent"></a> `defineIntent([viewInterface], definitionFn)`
+### <a id="createIntent"></a> `createIntent([viewInterface], definitionFn)`
 
 Returns a DataFlowNode representing an Intent, having some View as input.
 
-Is a specialized case of `defineDataFlowNode()`, hence can also receive multiple
+Is a specialized case of `createDataFlowNode()`, hence can also receive multiple
 interfaces and multiple inputs in `definitionFn`.
 
 #### Arguments:
@@ -86,18 +100,18 @@ interfaces and multiple inputs in `definitionFn`.
 
 *(DataFlowNode)* a DataFlowNode representing an Intent, containing a `inject(view)` function.
 
-### <a id="renderEvery"></a> `renderEvery(vtree$, container)`
+### <a id="createRenderer"></a> `createRenderer(container)`
 
-Renders every virtual element emitted by `vtree$` into the element `container`.
+Returns a Renderer (a DataFlowSink) bound to a DOM container element. Contains an
+`inject` function that should be called with a View as argument.
 
 #### Arguments:
 
-- `vtree$ :: Rx.Observable<VirtualNode>` an Observable of VTree instances (virtual DOM elements).
 - `container :: (String|HTMLElement)` the DOM selector for the element (or the element itself) to contain the rendering of the VTrees.
 
 #### Return:
 
-*(Rx.Disposable)* a subscription to the `vtree$` Observable.
+*(Renderer)* a Renderer object containing an `inject(view)` function.
 
 ### <a id="circularInject"></a> `circularInject(model, view, intent)`
 

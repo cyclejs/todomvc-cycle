@@ -14,7 +14,7 @@ function merge() {
 	return result;
 }
 
-var InitialTodosModel = Cycle.defineModel(function () {
+var InitialTodosModel = Cycle.createModel(function () {
 	var defaultTodosData = {
 		list: [],
 		input: '',
