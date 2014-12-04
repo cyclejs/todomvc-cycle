@@ -2,7 +2,7 @@
   "name": "todomvc-cycle",
   "version": "0.0.0",
   "dependencies": {
-    "cycle": "0.6.0",
+    "cycle": "0.6.3",
     "rxjs": "2.3.18",
     "todomvc-common": "~0.3.0"
   }

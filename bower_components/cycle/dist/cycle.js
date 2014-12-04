@@ -15658,20 +15658,37 @@ Rx.Node = {
 module.exports = Rx;
 
 },{"./dist/rx.all":17,"./dist/rx.sorting":19,"./dist/rx.testing":20,"events":2}],22:[function(require,module,exports){
-var diff = require("vtree/diff")
+var diff = require("./vtree/diff.js")
 
 module.exports = diff
 
-},{"vtree/diff":31}],23:[function(require,module,exports){
+},{"./vtree/diff.js":41}],23:[function(require,module,exports){
+module.exports=require(10)
+},{"/Users/amed/Hobby/cycle/node_modules/dom-delegator/node_modules/global/document.js":10,"min-document":1}],24:[function(require,module,exports){
 module.exports = isObject
 
 function isObject(x) {
     return typeof x === "object" && x !== null
 }
 
-},{}],24:[function(require,module,exports){
+},{}],25:[function(require,module,exports){
+var nativeIsArray = Array.isArray
+var toString = Object.prototype.toString
+
+module.exports = nativeIsArray || isArray
+
+function isArray(obj) {
+    return toString.call(obj) === "[object Array]"
+}
+
+},{}],26:[function(require,module,exports){
+var patch = require("./vdom/patch.js")
+
+module.exports = patch
+
+},{"./vdom/patch.js":31}],27:[function(require,module,exports){
 var isObject = require("is-object")
-var isHook = require("vtree/is-vhook")
+var isHook = require("../vnode/is-vhook.js")
 
 module.exports = applyProperties
 
@@ -15713,6 +15730,8 @@ function removeProperty(node, props, previous, propName) {
             } else {
                 node[propName] = null
             }
+        } else if (previousValue.unhook) {
+            previousValue.unhook(node, propName)
         }
     }
 }
@@ -15763,15 +15782,15 @@ function getPrototype(value) {
     }
 }
 
-},{"is-object":23,"vtree/is-vhook":34}],25:[function(require,module,exports){
+},{"../vnode/is-vhook.js":35,"is-object":24}],28:[function(require,module,exports){
 var document = require("global/document")
 
 var applyProperties = require("./apply-properties")
 
-var isVNode = require("vtree/is-vnode")
-var isVText = require("vtree/is-vtext")
-var isWidget = require("vtree/is-widget")
-var handleThunk = require("vtree/handle-thunk")
+var isVNode = require("../vnode/is-vnode.js")
+var isVText = require("../vnode/is-vtext.js")
+var isWidget = require("../vnode/is-widget.js")
+var handleThunk = require("../vnode/handle-thunk.js")
 
 module.exports = createElement
 
@@ -15811,7 +15830,7 @@ function createElement(vnode, opts) {
     return node
 }
 
-},{"./apply-properties":24,"global/document":27,"vtree/handle-thunk":32,"vtree/is-vnode":35,"vtree/is-vtext":36,"vtree/is-widget":37}],26:[function(require,module,exports){
+},{"../vnode/handle-thunk.js":33,"../vnode/is-vnode.js":36,"../vnode/is-vtext.js":37,"../vnode/is-widget.js":38,"./apply-properties":27,"global/document":23}],29:[function(require,module,exports){
 // Maps a virtual DOM tree onto a real DOM tree in an efficient manner.
 // We don't want to read all of the DOM nodes in the tree so we use
 // the in-order tree indexing to eliminate recursion down certain branches.
@@ -15898,13 +15917,11 @@ function ascending(a, b) {
     return a > b ? 1 : -1
 }
 
-},{}],27:[function(require,module,exports){
-module.exports=require(10)
-},{"/Users/amed/Hobby/cycle/node_modules/dom-delegator/node_modules/global/document.js":10,"min-document":1}],28:[function(require,module,exports){
+},{}],30:[function(require,module,exports){
 var applyProperties = require("./apply-properties")
 
-var isWidget = require("vtree/is-widget")
-var VPatch = require("vtree/vpatch")
+var isWidget = require("../vnode/is-widget.js")
+var VPatch = require("../vnode/vpatch.js")
 
 var render = require("./create-element")
 var updateWidget = require("./update-widget")
@@ -15978,26 +15995,30 @@ function stringPatch(domNode, leftVNode, vText, renderOptions) {
         }
     }
 
-    destroyWidget(domNode, leftVNode)
-
     return newNode
 }
 
 function widgetPatch(domNode, leftVNode, widget, renderOptions) {
-    if (updateWidget(leftVNode, widget)) {
-        return widget.update(leftVNode, domNode) || domNode
+    var updating = updateWidget(leftVNode, widget)
+    var newNode
+
+    if (updating) {
+        newNode = widget.update(leftVNode, domNode) || domNode
+    } else {
+        newNode = render(widget, renderOptions)
     }
 
     var parentNode = domNode.parentNode
-    var newWidget = render(widget, renderOptions)
 
-    if (parentNode) {
-        parentNode.replaceChild(newWidget, domNode)
+    if (parentNode && newNode !== domNode) {
+        parentNode.replaceChild(newNode, domNode)
     }
 
-    destroyWidget(domNode, leftVNode)
+    if (!updating) {
+        destroyWidget(domNode, leftVNode)
+    }
 
-    return newWidget
+    return newNode
 }
 
 function vNodePatch(domNode, leftVNode, vNode, renderOptions) {
@@ -16007,8 +16028,6 @@ function vNodePatch(domNode, leftVNode, vNode, renderOptions) {
     if (parentNode) {
         parentNode.replaceChild(newNode, domNode)
     }
-
-    destroyWidget(domNode, leftVNode)
 
     return newNode
 }
@@ -16070,7 +16089,7 @@ function replaceRoot(oldRoot, newRoot) {
     return newRoot;
 }
 
-},{"./apply-properties":24,"./create-element":25,"./update-widget":30,"vtree/is-widget":37,"vtree/vpatch":39}],29:[function(require,module,exports){
+},{"../vnode/is-widget.js":38,"../vnode/vpatch.js":40,"./apply-properties":27,"./create-element":28,"./update-widget":32}],31:[function(require,module,exports){
 var document = require("global/document")
 var isArray = require("x-is-array")
 
@@ -16148,8 +16167,8 @@ function patchIndices(patches) {
     return indices
 }
 
-},{"./dom-index":26,"./patch-op":28,"global/document":27,"x-is-array":40}],30:[function(require,module,exports){
-var isWidget = require("vtree/is-widget")
+},{"./dom-index":29,"./patch-op":30,"global/document":23,"x-is-array":25}],32:[function(require,module,exports){
+var isWidget = require("../vnode/is-widget.js")
 
 module.exports = updateWidget
 
@@ -16165,16 +16184,126 @@ function updateWidget(a, b) {
     return false
 }
 
-},{"vtree/is-widget":37}],31:[function(require,module,exports){
-var isArray = require("x-is-array")
-var isObject = require("is-object")
-
-var VPatch = require("./vpatch")
+},{"../vnode/is-widget.js":38}],33:[function(require,module,exports){
 var isVNode = require("./is-vnode")
 var isVText = require("./is-vtext")
 var isWidget = require("./is-widget")
 var isThunk = require("./is-thunk")
-var handleThunk = require("./handle-thunk")
+
+module.exports = handleThunk
+
+function handleThunk(a, b) {
+    var renderedA = a
+    var renderedB = b
+
+    if (isThunk(b)) {
+        renderedB = renderThunk(b, a)
+    }
+
+    if (isThunk(a)) {
+        renderedA = renderThunk(a, null)
+    }
+
+    return {
+        a: renderedA,
+        b: renderedB
+    }
+}
+
+function renderThunk(thunk, previous) {
+    var renderedThunk = thunk.vnode
+
+    if (!renderedThunk) {
+        renderedThunk = thunk.vnode = thunk.render(previous)
+    }
+
+    if (!(isVNode(renderedThunk) ||
+            isVText(renderedThunk) ||
+            isWidget(renderedThunk))) {
+        throw new Error("thunk did not return a valid node");
+    }
+
+    return renderedThunk
+}
+
+},{"./is-thunk":34,"./is-vnode":36,"./is-vtext":37,"./is-widget":38}],34:[function(require,module,exports){
+module.exports = isThunk
+
+function isThunk(t) {
+    return t && t.type === "Thunk"
+}
+
+},{}],35:[function(require,module,exports){
+module.exports = isHook
+
+function isHook(hook) {
+    return hook && typeof hook.hook === "function" &&
+        !hook.hasOwnProperty("hook")
+}
+
+},{}],36:[function(require,module,exports){
+var version = require("./version")
+
+module.exports = isVirtualNode
+
+function isVirtualNode(x) {
+    return x && x.type === "VirtualNode" && x.version === version
+}
+
+},{"./version":39}],37:[function(require,module,exports){
+var version = require("./version")
+
+module.exports = isVirtualText
+
+function isVirtualText(x) {
+    return x && x.type === "VirtualText" && x.version === version
+}
+
+},{"./version":39}],38:[function(require,module,exports){
+module.exports = isWidget
+
+function isWidget(w) {
+    return w && w.type === "Widget"
+}
+
+},{}],39:[function(require,module,exports){
+module.exports = "1"
+
+},{}],40:[function(require,module,exports){
+var version = require("./version")
+
+VirtualPatch.NONE = 0
+VirtualPatch.VTEXT = 1
+VirtualPatch.VNODE = 2
+VirtualPatch.WIDGET = 3
+VirtualPatch.PROPS = 4
+VirtualPatch.ORDER = 5
+VirtualPatch.INSERT = 6
+VirtualPatch.REMOVE = 7
+VirtualPatch.THUNK = 8
+
+module.exports = VirtualPatch
+
+function VirtualPatch(type, vNode, patch) {
+    this.type = Number(type)
+    this.vNode = vNode
+    this.patch = patch
+}
+
+VirtualPatch.prototype.version = version
+VirtualPatch.prototype.type = "VirtualPatch"
+
+},{"./version":39}],41:[function(require,module,exports){
+var isArray = require("x-is-array")
+var isObject = require("is-object")
+
+var VPatch = require("../vnode/vpatch")
+var isVNode = require("../vnode/is-vnode")
+var isVText = require("../vnode/is-vtext")
+var isWidget = require("../vnode/is-widget")
+var isThunk = require("../vnode/is-thunk")
+var isHook = require("../vnode/is-vhook")
+var handleThunk = require("../vnode/handle-thunk")
 
 module.exports = diff
 
@@ -16186,11 +16315,6 @@ function diff(a, b) {
 
 function walk(a, b, patch, index) {
     if (a === b) {
-        if (isThunk(a) || isThunk(b)) {
-            thunks(a, b, patch, index)
-        } else {
-            hooks(b, patch, index)
-        }
         return
     }
 
@@ -16199,40 +16323,52 @@ function walk(a, b, patch, index) {
     if (isThunk(a) || isThunk(b)) {
         thunks(a, b, patch, index)
     } else if (b == null) {
-        patch[index] = new VPatch(VPatch.REMOVE, a, b)
-        destroyWidgets(a, patch, index)
+
+        // If a is a widget we will add a remove patch for it
+        // Otherwise any child widgets/hooks must be destroyed.
+        // This prevents adding two remove patches for a widget.
+        if (!isWidget(a)) {
+            clearState(a, patch, index)
+            apply = patch[index]
+        }
+
+        apply = appendPatch(apply, new VPatch(VPatch.REMOVE, a, b))
     } else if (isVNode(b)) {
         if (isVNode(a)) {
             if (a.tagName === b.tagName &&
                 a.namespace === b.namespace &&
                 a.key === b.key) {
-                var propsPatch = diffProps(a.properties, b.properties, b.hooks)
+                var propsPatch = diffProps(a.properties, b.properties)
                 if (propsPatch) {
                     apply = appendPatch(apply,
                         new VPatch(VPatch.PROPS, a, propsPatch))
                 }
                 apply = diffChildren(a, b, patch, apply, index)
             } else {
+                clearState(a, patch, index)
+                apply = patch[index]
                 apply = appendPatch(apply, new VPatch(VPatch.VNODE, a, b))
-                destroyWidgets(a, patch, index)
             }
         } else {
+            clearState(a, patch, index)
+            apply = patch[index]
             apply = appendPatch(apply, new VPatch(VPatch.VNODE, a, b))
-            destroyWidgets(a, patch, index)
         }
     } else if (isVText(b)) {
         if (!isVText(a)) {
+            clearState(a, patch, index)
+            apply = patch[index]
             apply = appendPatch(apply, new VPatch(VPatch.VTEXT, a, b))
-            destroyWidgets(a, patch, index)
         } else if (a.text !== b.text) {
             apply = appendPatch(apply, new VPatch(VPatch.VTEXT, a, b))
         }
     } else if (isWidget(b)) {
-        apply = appendPatch(apply, new VPatch(VPatch.WIDGET, a, b))
-
         if (!isWidget(a)) {
-            destroyWidgets(a, patch, index)
+            clearState(a, patch, index)
+            apply = patch[index]
         }
+
+        apply = appendPatch(apply, new VPatch(VPatch.WIDGET, a, b))
     }
 
     if (apply) {
@@ -16240,7 +16376,7 @@ function walk(a, b, patch, index) {
     }
 }
 
-function diffProps(a, b, hooks) {
+function diffProps(a, b) {
     var diff
 
     for (var aKey in a) {
@@ -16252,25 +16388,25 @@ function diffProps(a, b, hooks) {
         var aValue = a[aKey]
         var bValue = b[aKey]
 
-        if (hooks && aKey in hooks) {
-            diff = diff || {}
-            diff[aKey] = bValue
-        } else {
-            if (isObject(aValue) && isObject(bValue)) {
-                if (getPrototype(bValue) !== getPrototype(aValue)) {
-                    diff = diff || {}
-                    diff[aKey] = bValue
-                } else {
-                    var objectDiff = diffProps(aValue, bValue)
-                    if (objectDiff) {
-                        diff = diff || {}
-                        diff[aKey] = objectDiff
-                    }
-                }
-            } else if (aValue !== bValue) {
+        if (aValue === bValue) {
+            continue
+        } else if (isObject(aValue) && isObject(bValue)) {
+            if (getPrototype(bValue) !== getPrototype(aValue)) {
                 diff = diff || {}
                 diff[aKey] = bValue
+            } else if (isHook(bValue)) {
+                 diff = diff || {}
+                 diff[aKey] = bValue
+            } else {
+                var objectDiff = diffProps(aValue, bValue)
+                if (objectDiff) {
+                    diff = diff || {}
+                    diff[aKey] = objectDiff
+                }
             }
+        } else {
+            diff = diff || {}
+            diff[aKey] = bValue
         }
     }
 
@@ -16330,12 +16466,21 @@ function diffChildren(a, b, patch, apply, index) {
     return apply
 }
 
+function clearState(vNode, patch, index) {
+    // TODO: Make this a single walk, not two
+    unhook(vNode, patch, index)
+    destroyWidgets(vNode, patch, index)
+}
+
 // Patch records for all destroyed widgets must be added because we need
 // a DOM node reference for the destroy function
 function destroyWidgets(vNode, patch, index) {
     if (isWidget(vNode)) {
         if (typeof vNode.destroy === "function") {
-            patch[index] = new VPatch(VPatch.REMOVE, vNode, null)
+            patch[index] = appendPatch(
+                patch[index],
+                new VPatch(VPatch.REMOVE, vNode, null)
+            )
         }
     } else if (isVNode(vNode) && (vNode.hasWidgets || vNode.hasThunks)) {
         var children = vNode.children
@@ -16375,27 +16520,46 @@ function hasPatches(patch) {
 }
 
 // Execute hooks when two nodes are identical
-function hooks(vNode, patch, index) {
+function unhook(vNode, patch, index) {
     if (isVNode(vNode)) {
         if (vNode.hooks) {
-            patch[index] = new VPatch(VPatch.PROPS, vNode.hooks, vNode.hooks)
+            patch[index] = appendPatch(
+                patch[index],
+                new VPatch(
+                    VPatch.PROPS,
+                    vNode,
+                    undefinedKeys(vNode.hooks)
+                )
+            )
         }
 
-        if (vNode.descendantHooks) {
+        if (vNode.descendantHooks || vNode.hasThunks) {
             var children = vNode.children
             var len = children.length
             for (var i = 0; i < len; i++) {
                 var child = children[i]
                 index += 1
 
-                hooks(child, patch, index)
+                unhook(child, patch, index)
 
                 if (isVNode(child) && child.count) {
                     index += child.count
                 }
             }
         }
+    } else if (isThunk(vNode)) {
+        thunks(vNode, null, patch, index)
     }
+}
+
+function undefinedKeys(obj) {
+    var result = {}
+
+    for (var key in obj) {
+        result[key] = undefined
+    }
+
+    return result
 }
 
 // List diff, naive left to right reordering
@@ -16415,12 +16579,12 @@ function reorder(aChildren, bChildren) {
 
     var bMatch = {}, aMatch = {}
 
-    for (var key in bKeys) {
-        bMatch[bKeys[key]] = aKeys[key]
+    for (var aKey in bKeys) {
+        bMatch[bKeys[aKey]] = aKeys[aKey]
     }
 
-    for (var key in aKeys) {
-        aMatch[aKeys[key]] = bKeys[key]
+    for (var bKey in aKeys) {
+        aMatch[aKeys[bKey]] = bKeys[bKey]
     }
 
     var aLen = aChildren.length
@@ -16507,131 +16671,7 @@ function appendPatch(apply, patch) {
     }
 }
 
-},{"./handle-thunk":32,"./is-thunk":33,"./is-vnode":35,"./is-vtext":36,"./is-widget":37,"./vpatch":39,"is-object":23,"x-is-array":40}],32:[function(require,module,exports){
-var isVNode = require("./is-vnode")
-var isVText = require("./is-vtext")
-var isWidget = require("./is-widget")
-var isThunk = require("./is-thunk")
-
-module.exports = handleThunk
-
-function handleThunk(a, b) {
-    var renderedA = a
-    var renderedB = b
-
-    if (isThunk(b)) {
-        renderedB = renderThunk(b, a)
-    }
-
-    if (isThunk(a)) {
-        renderedA = renderThunk(a, null)
-    }
-
-    return {
-        a: renderedA,
-        b: renderedB
-    }
-}
-
-function renderThunk(thunk, previous) {
-    var renderedThunk = thunk.vnode
-
-    if (!renderedThunk) {
-        renderedThunk = thunk.vnode = thunk.render(previous)
-    }
-
-    if (!(isVNode(renderedThunk) ||
-            isVText(renderedThunk) ||
-            isWidget(renderedThunk))) {
-        throw new Error("thunk did not return a valid node");
-    }
-
-    return renderedThunk
-}
-
-},{"./is-thunk":33,"./is-vnode":35,"./is-vtext":36,"./is-widget":37}],33:[function(require,module,exports){
-module.exports = isThunk
-
-function isThunk(t) {
-    return t && t.type === "Thunk"
-}
-
-},{}],34:[function(require,module,exports){
-module.exports = isHook
-
-function isHook(hook) {
-    return hook && typeof hook.hook === "function" &&
-        !hook.hasOwnProperty("hook")
-}
-
-},{}],35:[function(require,module,exports){
-var version = require("./version")
-
-module.exports = isVirtualNode
-
-function isVirtualNode(x) {
-    return x && x.type === "VirtualNode" && x.version === version
-}
-
-},{"./version":38}],36:[function(require,module,exports){
-var version = require("./version")
-
-module.exports = isVirtualText
-
-function isVirtualText(x) {
-    return x && x.type === "VirtualText" && x.version === version
-}
-
-},{"./version":38}],37:[function(require,module,exports){
-module.exports = isWidget
-
-function isWidget(w) {
-    return w && w.type === "Widget"
-}
-
-},{}],38:[function(require,module,exports){
-module.exports = "1"
-
-},{}],39:[function(require,module,exports){
-var version = require("./version")
-
-VirtualPatch.NONE = 0
-VirtualPatch.VTEXT = 1
-VirtualPatch.VNODE = 2
-VirtualPatch.WIDGET = 3
-VirtualPatch.PROPS = 4
-VirtualPatch.ORDER = 5
-VirtualPatch.INSERT = 6
-VirtualPatch.REMOVE = 7
-VirtualPatch.THUNK = 8
-
-module.exports = VirtualPatch
-
-function VirtualPatch(type, vNode, patch) {
-    this.type = Number(type)
-    this.vNode = vNode
-    this.patch = patch
-}
-
-VirtualPatch.prototype.version = version
-VirtualPatch.prototype.type = "VirtualPatch"
-
-},{"./version":38}],40:[function(require,module,exports){
-var nativeIsArray = Array.isArray
-var toString = Object.prototype.toString
-
-module.exports = nativeIsArray || isArray
-
-function isArray(obj) {
-    return toString.call(obj) === "[object Array]"
-}
-
-},{}],41:[function(require,module,exports){
-var patch = require("vdom/patch")
-
-module.exports = patch
-
-},{"vdom/patch":29}],42:[function(require,module,exports){
+},{"../vnode/handle-thunk":33,"../vnode/is-thunk":34,"../vnode/is-vhook":35,"../vnode/is-vnode":36,"../vnode/is-vtext":37,"../vnode/is-widget":38,"../vnode/vpatch":40,"is-object":24,"x-is-array":25}],42:[function(require,module,exports){
 var DataSet = require("data-set")
 
 module.exports = DataSetHook;
@@ -16991,18 +17031,18 @@ function TypedError(args) {
 
 
 },{"camelize":51,"string-template":52,"xtend/mutable":53}],55:[function(require,module,exports){
-module.exports=require(33)
-},{"/Users/amed/Hobby/cycle/node_modules/virtual-dom/node_modules/vtree/is-thunk.js":33}],56:[function(require,module,exports){
 module.exports=require(34)
-},{"/Users/amed/Hobby/cycle/node_modules/virtual-dom/node_modules/vtree/is-vhook.js":34}],57:[function(require,module,exports){
+},{"/Users/amed/Hobby/cycle/node_modules/virtual-dom/vnode/is-thunk.js":34}],56:[function(require,module,exports){
 module.exports=require(35)
-},{"./version":60,"/Users/amed/Hobby/cycle/node_modules/virtual-dom/node_modules/vtree/is-vnode.js":35}],58:[function(require,module,exports){
+},{"/Users/amed/Hobby/cycle/node_modules/virtual-dom/vnode/is-vhook.js":35}],57:[function(require,module,exports){
 module.exports=require(36)
-},{"./version":60,"/Users/amed/Hobby/cycle/node_modules/virtual-dom/node_modules/vtree/is-vtext.js":36}],59:[function(require,module,exports){
+},{"./version":60,"/Users/amed/Hobby/cycle/node_modules/virtual-dom/vnode/is-vnode.js":36}],58:[function(require,module,exports){
 module.exports=require(37)
-},{"/Users/amed/Hobby/cycle/node_modules/virtual-dom/node_modules/vtree/is-widget.js":37}],60:[function(require,module,exports){
+},{"./version":60,"/Users/amed/Hobby/cycle/node_modules/virtual-dom/vnode/is-vtext.js":37}],59:[function(require,module,exports){
 module.exports=require(38)
-},{"/Users/amed/Hobby/cycle/node_modules/virtual-dom/node_modules/vtree/version.js":38}],61:[function(require,module,exports){
+},{"/Users/amed/Hobby/cycle/node_modules/virtual-dom/vnode/is-widget.js":38}],60:[function(require,module,exports){
+module.exports=require(39)
+},{"/Users/amed/Hobby/cycle/node_modules/virtual-dom/vnode/version.js":39}],61:[function(require,module,exports){
 var version = require("./version")
 var isVNode = require("./is-vnode")
 var isWidget = require("./is-widget")
@@ -17149,7 +17189,7 @@ function createIntent() {
 
 module.exports = createIntent;
 
-},{"./data-flow-node":68,"./errors":70}],65:[function(require,module,exports){
+},{"./data-flow-node":68,"./errors":71}],65:[function(require,module,exports){
 'use strict';
 var DataFlowNode = require('./data-flow-node');
 var errors = require('./errors');
@@ -17168,7 +17208,7 @@ function createModel() {
 
 module.exports = createModel;
 
-},{"./data-flow-node":68,"./errors":70}],66:[function(require,module,exports){
+},{"./data-flow-node":68,"./errors":71}],66:[function(require,module,exports){
 'use strict';
 var Rx = require('rx');
 var DataFlowNode = require('./data-flow-node');
@@ -17204,32 +17244,48 @@ function replaceStreamNameWithForwardFunction(vtree, view) {
   }
 }
 
+function checkEventsArray(view) {
+  if (typeof view.events === 'undefined') {
+    throw new Error('View must define `events` array with names of event streams');
+  }
+}
+
+function checkVTree$(view) {
+  if (typeof view.vtree$ === 'undefined' || typeof view.vtree$.subscribe !== 'function') {
+    throw new Error('View must define `vtree$` Observable emitting virtual DOM elements');
+  }
+}
+
+function throwErrorIfNotVTree(vtree) {
+  if (vtree.type !== 'VirtualNode' || vtree.tagName === 'undefined') {
+    throw new Error('View `vtree$` must emit only VirtualNode instances. ' +
+      'Hint: create them with Cycle.h()'
+    );
+  }
+}
+
 function createView() {
   var view = DataFlowNode.apply({}, arguments);
   view = errors.customInterfaceErrorMessageInInject(view,
     'View expects Model to have the required property '
   );
-  if (typeof view.events === 'undefined') {
-    throw new Error('View must define `events` array with names of event streams');
-  }
-  if (typeof view.vtree$ === 'undefined') {
-    throw new Error('View must define `vtree$` Observable emitting virtual DOM elements');
-  }
+  checkEventsArray(view);
+  checkVTree$(view);
   if (view.events) {
     for (var i = view.events.length - 1; i >= 0; i--) {
       view[view.events[i]] = new Rx.Subject();
     }
     delete view.events;
   }
-  view.vtree$ = view.vtree$.map(function (vtree) {
-    if (vtree.type !== 'VirtualNode' || vtree.tagName === 'undefined') {
-      throw new Error('View `vtree$` must emit only VirtualNode instances. ' +
-        'Hint: create them with Cycle.h()'
-      );
-    }
-    replaceStreamNameWithForwardFunction(vtree, view);
-    return vtree;
-  });
+  view.vtree$ = view.vtree$
+    .map(function (vtree) {
+      throwErrorIfNotVTree(vtree);
+      replaceStreamNameWithForwardFunction(vtree, view);
+      return vtree;
+    })
+    .shareReplay(1)
+  ;
+  try { view.vtree$.subscribe(function () {}); } catch (err) { }
   var originalArgs = arguments;
   view.clone = function cloneView() {
     return createView.apply({}, originalArgs);
@@ -17239,13 +17295,14 @@ function createView() {
 
 module.exports = createView;
 
-},{"./data-flow-node":68,"./errors":70,"rx":21}],67:[function(require,module,exports){
+},{"./data-flow-node":68,"./errors":71,"rx":21}],67:[function(require,module,exports){
 'use strict';
 var h = require('virtual-hyperscript');
 var Rx = require('rx');
 var DataFlowNode = require('./data-flow-node');
-var DataFlowSink = require('./data-flow-node');
-var Rendering = require('./rendering');
+var DataFlowSource = require('./data-flow-source');
+var DataFlowSink = require('./data-flow-sink');
+var Renderer = require('./rendering').Renderer;
 var PropertyHook = require('./property-hook');
 
 var Cycle = {
@@ -17271,6 +17328,20 @@ var Cycle = {
    */
   createDataFlowNode: function createDataFlowNode() {
     return DataFlowNode.apply({}, arguments);
+  },
+
+  /**
+   * Creates a DataFlowSource. It receives an object as argument, and outputs that same
+   * object, annotated as a DataFlowSource. For all practical purposes, a DataFlowSource
+   * is just a regular object with RxJS Observables, but for consistency with other
+   * components in the framework such as DataFlowNode, the returned object is an instance
+   * of DataFlowSource.
+   *
+   * @param {Object} outputObject an object containing RxJS Observables.
+   * @return {DataFlowSource} a DataFlowSource equivalent to the given outputObject
+   */
+  createDataFlowSource: function createDataFlowSource() {
+    return DataFlowSource.apply({}, arguments);
   },
 
   /**
@@ -17346,7 +17417,7 @@ var Cycle = {
    * @function createRenderer
    */
   createRenderer: function createRenderer(container) {
-    return new Rendering.Renderer(container);
+    return new Renderer(container);
   },
 
   /**
@@ -17403,7 +17474,7 @@ var Cycle = {
 
 module.exports = Cycle;
 
-},{"./create-intent":64,"./create-model":65,"./create-view":66,"./data-flow-node":68,"./property-hook":72,"./rendering":73,"rx":21,"virtual-hyperscript":45}],68:[function(require,module,exports){
+},{"./create-intent":64,"./create-model":65,"./create-view":66,"./data-flow-node":68,"./data-flow-sink":69,"./data-flow-source":70,"./property-hook":73,"./rendering":74,"rx":21,"virtual-hyperscript":45}],68:[function(require,module,exports){
 'use strict';
 var Rx = require('rx');
 var errors = require('./errors');
@@ -17418,6 +17489,7 @@ function replicate(source, subject) {
       subject.onNext(x);
     },
     function replicationOnError(err) {
+      subject.onError(err);
       console.error(err);
     }
   );
@@ -17489,7 +17561,7 @@ function DataFlowNode() {
   var output = definitionFn.apply(this, inputStubs);
   checkOutputObject(output);
   copyProperties(output, this);
-  this.inject = function () {
+  this.inject = function injectIntoDataFlowNode() {
     if (wasInjected) {
       console.warn('DataFlowNode has already been injected an input.');
     }
@@ -17506,7 +17578,7 @@ function DataFlowNode() {
 
 module.exports = DataFlowNode;
 
-},{"./errors":70,"rx":21}],69:[function(require,module,exports){
+},{"./errors":71,"rx":21}],69:[function(require,module,exports){
 'use strict';
 
 function DataFlowSink(definitionFn) {
@@ -17525,6 +17597,31 @@ function DataFlowSink(definitionFn) {
 module.exports = DataFlowSink;
 
 },{}],70:[function(require,module,exports){
+'use strict';
+
+function DataFlowSource(outputObject) {
+  if (arguments.length !== 1) {
+    throw new Error('DataFlowSource expects only one argument: the output object.');
+  }
+  if (typeof outputObject !== 'object') {
+    throw new Error('DataFlowSource expects the constructor argument to be the ' +
+      'output object.'
+    );
+  }
+  for (var key in outputObject) {
+    if (outputObject.hasOwnProperty(key)) {
+      this[key] = outputObject;
+    }
+  }
+  this.inject = function injectDataFlowSource() {
+    throw new Error('A DataFlowSource cannot be injected. Use a DataFlowNode instead.');
+  };
+  return this;
+}
+
+module.exports = DataFlowSource;
+
+},{}],71:[function(require,module,exports){
 'use strict';
 
 function CycleInterfaceError(message, missingMember) {
@@ -17555,14 +17652,14 @@ module.exports = {
   customInterfaceErrorMessageInInject: customInterfaceErrorMessageInInject
 };
 
-},{}],71:[function(require,module,exports){
+},{}],72:[function(require,module,exports){
 (function (global){
 'use strict';
 var Cycle = require('./cycle');
 global.Cycle = Cycle;
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"./cycle":67}],72:[function(require,module,exports){
+},{"./cycle":67}],73:[function(require,module,exports){
 'use strict';
 
 function PropertyHook(fn) {
@@ -17574,7 +17671,7 @@ PropertyHook.prototype.hook = function () {
 
 module.exports = PropertyHook;
 
-},{}],73:[function(require,module,exports){
+},{}],74:[function(require,module,exports){
 'use strict';
 
 var h = require('virtual-hyperscript');
@@ -17596,16 +17693,7 @@ function isElement(o) {
   );
 }
 
-function renderEvery(vtree$, container) {
-  // Find and prepare the container
-  var domContainer = (typeof container === 'string') ?
-    document.querySelector(container) :
-    container;
-  if (typeof container === 'string' && domContainer === null) {
-    throw new Error('Couldn\'t render into unknown \'' + domContainer + '\'');
-  } else if (!isElement(domContainer)) {
-    throw new Error('Given container is not a DOM element neither a selector string.');
-  }
+function renderEvery(vtree$, domContainer) {
   domContainer.innerHTML = '';
   // Make the DOM node bound to the VDOM node
   var rootNode = document.createElement('div');
@@ -17616,6 +17704,9 @@ function renderEvery(vtree$, container) {
       try {
         var oldVTree = buffer[0];
         var newVTree = buffer[1];
+        if (typeof newVTree === 'undefined') {
+          return;
+        }
         rootNode = VDOM.patch(rootNode, VDOM.diff(oldVTree, newVTree));
       } catch (err) {
         console.error(err);
@@ -17624,8 +17715,17 @@ function renderEvery(vtree$, container) {
 }
 
 function Renderer(container) {
+  // Find and prepare the container
+  var domContainer = (typeof container === 'string') ?
+    document.querySelector(container) :
+    container;
+  if (typeof container === 'string' && domContainer === null) {
+    throw new Error('Cannot render into unknown element \'' + container + '\'');
+  } else if (!isElement(domContainer)) {
+    throw new Error('Given container is not a DOM element neither a selector string.');
+  }
   DataFlowSink.call(this, function injectIntoRenderer(view) {
-    return renderEvery(view.vtree$, container);
+    return renderEvery(view.vtree$, domContainer);
   });
   this.delegator = delegator;
 }
@@ -17639,4 +17739,4 @@ module.exports = {
   delegator: delegator
 };
 
-},{"./data-flow-sink":69,"dom-delegator":6,"virtual-dom/diff":22,"virtual-dom/patch":41,"virtual-hyperscript":45}]},{},[71]);
+},{"./data-flow-sink":69,"dom-delegator":6,"virtual-dom/diff":22,"virtual-dom/patch":26,"virtual-hyperscript":45}]},{},[72]);
