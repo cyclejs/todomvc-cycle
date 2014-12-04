@@ -25,6 +25,16 @@ function determineFilter(todosData, route) {
 	return todosData;
 }
 
+// Rx's missing golden operator
+function withLatest(A$, B$, combineFunc) {
+	var hotA$ = A$.publish().refCount();
+	return B$
+		.map(function (b) {
+			return hotA$.map(function (a) { return combineFunc(a, b); });
+		})
+		.switch();
+}
+
 var IntentInterface = ['insertTodo$', 'deleteTodo$', 'toggleTodo$',
 	'toggleAll$', 'clearInput$', 'deleteCompleteds$', 'startEditTodo$',
 	'editTodo$', 'doneEditing$', 'changeRoute$'
@@ -65,8 +75,8 @@ var TodosModel = Cycle.createModel(IntentInterface, ['todosData$'],
 			};
 		});
 
-	var stopEditingMod$ = intent.doneEditing$
-		.map(function () {
+	var stopEditingMod$ = withLatest(intent.doneEditing$, editTodoMod$,
+		function(d, editMod) {
 			return function (todosData) {
 				todosData.list.forEach(function (todoData) {
 					todoData.editing = false;
@@ -74,7 +84,7 @@ var TodosModel = Cycle.createModel(IntentInterface, ['todosData$'],
 				todosData.list = todosData.list.filter(function (todoData) {
 					return todoData.title.trim().length > 0;
 				});
-				return todosData;
+				return editMod(todosData);
 			};
 		});
 
@@ -128,7 +138,7 @@ var TodosModel = Cycle.createModel(IntentInterface, ['todosData$'],
 
 	var modifications$ = Rx.Observable.merge(
 		insertTodoMod$, deleteTodoMod$, toggleTodoMod$, toggleAllMod$,
-		clearInputMod$, deleteCompletedsMod$, startEditTodoMod$, editTodoMod$,
+		clearInputMod$, deleteCompletedsMod$, startEditTodoMod$,
 		stopEditingMod$
 	);
 
