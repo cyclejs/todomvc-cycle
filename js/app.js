@@ -2,6 +2,7 @@
 /*global Cycle */
 
 Cycle.createRenderer('#todoapp').inject(TodosView);
+LocalStorageSink.inject(TodosModel);
 TodosIntent.inject(TodosView);
 TodosView.inject(TodosModel);
-TodosModel.inject(TodosIntent, InitialTodosModel);
+TodosModel.inject(TodosIntent, TodosModelSource);

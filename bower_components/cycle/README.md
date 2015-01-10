@@ -1,4 +1,6 @@
-# Cycle
+<h1>
+<img src="https://raw.github.com/staltz/cycle/master/logo.png" /> Cycle.js
+</h1>
 
 > A web application framework using the Reactive Model-View-Intent architecture and Virtual
 DOM Rendering.
@@ -12,7 +14,7 @@ DOM Rendering.
 * **Virtual DOM Rendering**: Views re-render completely whenever Models emit any event.
   The use of [virtual-dom](https://github.com/Matt-Esch/virtual-dom) keeps performance
   optimal by patching the actual DOM with only the minimum necessary changes.
-* **MVI is functional**: each component in the MVI cycle behaves like a function,
+* **MVI is functional**: each node in the MVI cycle behaves like a function,
   receiving events as input, and outputting events. No side effects. This makes it
   convenient for composing with other components, or for automating tests.
 
@@ -26,42 +28,43 @@ DOM Rendering.
 ## Example
 
 ```javascript
-var HelloModel = Cycle.createModel(['changeName$'], function (intent) {
-  return {name$: intent.changeName$.startWith('')};
+var Cycle = require('cyclejs');
+var h = Cycle.h;
+
+var HelloModel = Cycle.createModel(function (intent) {
+  return {name$: intent.get('changeName$').startWith('')};
 });
 
-var HelloView = Cycle.createView(['name$'], function (model) {
+var HelloView = Cycle.createView(function (model) {
   return {
-    vtree$: model.name$
-      .map(function (name) {
-        return Cycle.h('div', {}, [
-          Cycle.h('label', 'Name:'),
-          Cycle.h('input', {
-            'attributes': {'type': 'text'},
-            'ev-input': 'inputText$'
+    vtree$: model.get('name$')
+      .map((name) =>
+        h('div', {}, [
+          h('label', 'Name:'),
+          h('input', {
+            attributes: {'type': 'text'},
+            oninput: 'inputText$'
           }),
-          Cycle.h('hr'),
-          Cycle.h('h1', 'Hello ' + name)
-        ]);
-      }),
-    events: ['inputText$']
+          h('h1', 'Hello ' + name)
+        ])
+      )
   };
 });
 
-var HelloIntent = Cycle.createIntent(['inputText$'], function (view) {
+var HelloIntent = Cycle.createIntent(function (view) {
   return {
-    changeName$: view.inputText$.map(function (ev) { return ev.target.value; })
+    changeName$: view.get('inputText$').map((ev) => ev.target.value)
   };
 });
 
 Cycle.createRenderer('.js-container').inject(HelloView);
-Cycle.circularInject(HelloModel, HelloView, HelloIntent);
+HelloIntent.inject(HelloView).inject(HelloModel).inject(HelloIntent);
 ```
 
 Notice that each of the 3 components has a neighbour component as input, and each outputs
 an object mostly containing Rx Observables. At the bottom, the Renderer we created
 subscribes to changes of `HelloView.vtree$` and renders those virtual elements into
-`.js-container` in the DOM. `Cycle.circularInject` just ties all three Model, View, and
+`.js-container` in the DOM. `inject()` just ties all three Model, View, and
 Intent together by telling them that they depend on each other circularly.
 
 For an advanced example, check out [TodoMVC implemented in Cycle.js](https://github.com/staltz/todomvc-cycle).
@@ -81,8 +84,8 @@ however there are several differences worth paying attention. Read the [seminal 
 that lead to the creation of Cycle.js](http://futurice.com/blog/reactive-mvc-and-the-virtual-dom).
 
 It has [virtual-dom](https://github.com/Matt-Esch/virtual-dom) and [RxJS](https://github.com/Reactive-Extensions/RxJS)
-as hard dependencies. Cycle is a "glue" framework providing helpers for building the
-Model-View-Intent architecture properly with those technologies. Cycle's code itself is
+as hard dependencies. Cycle.js is a "glue" framework providing helpers for building the
+Model-View-Intent architecture properly with those technologies. Cycle.js's code itself is
 still under 400 lines of code only.
 
 ## Why?
@@ -107,9 +110,16 @@ are a couple of strong reasons:
   combination with RxJS, a programming style that favors immutability and statelessness.
   This allows code to be clearer and less prone to bugs.
 
+## Community
+
+* Ask "_how do I...?_" questions in Gitter: <br />[![Gitter](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/staltz/cycle?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+* Propose and discuss significant changes as a GitHub issues
+
 ## Disclaimer
 
-Cycle is in alpha mode, many changes to the API will likely occur before v1.0 is released.
+### Work in progress
+
+Cycle.js is in alpha mode, many changes to the API will likely occur before v1.0 is released.
 Use this framework only for experiments before that. PS: we don't want to stay as alpha
 forever, either. ;)
 

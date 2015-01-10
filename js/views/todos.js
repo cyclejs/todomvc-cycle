@@ -16,7 +16,7 @@ function vrenderHeader(todosData) {
 			},
 			autofocus: true,
 			name: 'newTodo',
-			'ev-keyup': 'newTodoKeyUp$'
+			onkeyup: 'newTodoKeyUp$'
 		})
 	]);
 }
@@ -33,13 +33,13 @@ function vrenderTodoItem(todoData) {
 				checked: Cycle.vdomPropHook(function (elem) {
 					elem.checked = todoData.completed;
 				}),
-				'ev-change': 'todoToggleClicks$'
+				onchange: 'todoToggleClicks$'
 			}),
 			h('label', {
-				'ev-dblclick': 'todoLabelDblClicks$'
+				ondblclick: 'todoLabelDblClicks$'
 			}, todoData.title),
 			h('button.destroy', {
-				'ev-click': 'todoDestroyClicks$'
+				onclick: 'todoDestroyClicks$'
 			})
 		]),
 		h('input.edit', {
@@ -51,8 +51,8 @@ function vrenderTodoItem(todoData) {
 					element.selectionStart = element.value.length;
 				}
 			}),
-			'ev-keyup': 'editTodoKeyUp$',
-			'ev-blur': 'editTodoBlur$'
+			onkeyup: 'editTodoKeyUp$',
+			onblur: 'editTodoBlur$'
 		})
 	]);
 }
@@ -67,7 +67,7 @@ function vrenderMainSection(todosData) {
 		h('input#toggle-all', {
 			type: 'checkbox',
 			checked: allCompleted,
-			'ev-click': 'toggleAllClicks$'
+			onclick: 'toggleAllClicks$'
 		}),
 		h('ul#todo-list', todosData.list
 			.filter(todosData.filterFn)
@@ -107,21 +107,16 @@ function vrenderFooter(todosData) {
 		]),
 		(amountCompleted > 0 ?
 			h('button#clear-completed', {
-				'ev-click': 'clearCompletedClicks$'
+				onclick: 'clearCompletedClicks$'
 			}, 'Clear completed (' + amountCompleted + ')')
 			: null
 		)
 	])
 }
 
-var TodosView = Cycle.createView(['todos$'], function (model) {
+var TodosView = Cycle.createView(function (model) {
 	return {
-		events: [
-			'newTodoKeyUp$', 'toggleAllClicks$', 'clearCompletedClicks$',
-			'todoToggleClicks$', 'todoDestroyClicks$', 'todoLabelDblClicks$',
-			'editTodoKeyUp$', 'editTodoBlur$'
-		],
-		vtree$: model.todos$
+		vtree$: model.get('todos$')
 			.map(function (todosData) {
 				return h('div', [
 					vrenderHeader(todosData),

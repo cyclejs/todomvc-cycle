@@ -1,6 +1,6 @@
 {
   "name": "cycle",
-  "version": "0.6.3",
+  "version": "0.8.1",
   "homepage": "https://github.com/staltz/cycle",
   "authors": [
     "Andre Staltz"
@@ -25,16 +25,17 @@
     "CONTRIBUTING.md",
     "src",
     "package.json",
+    "logo.png",
     "test",
     "tests"
   ],
-  "_release": "0.6.3",
+  "_release": "0.8.1",
   "_resolution": {
     "type": "version",
-    "tag": "v0.6.3",
-    "commit": "840353694f961b1821f290570cda2b9fa6bf0f0e"
+    "tag": "v0.8.1",
+    "commit": "15d1a5f3dd156b65f8490d8c15d25cd5170bd39e"
   },
   "_source": "git://github.com/staltz/cycle.git",
-  "_target": "0.6.3",
+  "_target": "0.8.1",
   "_originalSource": "cycle"
 }
