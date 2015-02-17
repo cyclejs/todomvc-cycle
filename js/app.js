@@ -1,16 +1,17 @@
 'use strict';
 /*global Cycle */
 
-Cycle.createRenderer('#todoapp').inject(TodosView);
+
+var User = Cycle.createDOMUser('#todoapp');
 LocalStorageSink.inject(TodosModel);
-TodosIntent.inject(TodosView);
+User.inject(TodosView);
 TodosView.inject(TodosModel);
 TodosModel.inject(TodosIntent, TodosModelSource);
+TodosIntent.inject(User);
 
 /*
 TODO
 
-Turn renderer into User
 create custom element for Todo
 ??
 

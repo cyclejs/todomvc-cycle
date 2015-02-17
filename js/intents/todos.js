@@ -24,14 +24,14 @@ function toEmptyString() {
 	return '';
 }
 
-var TodosIntent = Cycle.createIntent(function (view) {
+var TodosIntent = Cycle.createIntent(function (User) {
 	return {
 		changeRoute$: Rx.Observable.fromEvent(window, 'hashchange')
 			.map(function (event) {
 				return event.newURL.match(/\#[^\#]*$/)[0].replace('#', '');
 			})
 			.startWith(window.location.hash.replace('#', '')),
-		insertTodo$: view.get('newTodoKeyUp$')
+		insertTodo$: User.event$('#new-todo', 'keyup')
 			.filter(function (ev) {
 				var trimmedVal = String(ev.target.value).trim();
 				return ev.keyCode === ENTER_KEY && trimmedVal;
@@ -39,22 +39,22 @@ var TodosIntent = Cycle.createIntent(function (view) {
 			.map(function (ev) {
 				return String(ev.target.value).trim();
 			}),
-		deleteTodo$: view.get('todoDestroyClicks$').map(getParentTodoId),
-		deleteCompleteds$: view.get('clearCompletedClicks$').map(toEmptyString),
-		toggleTodo$: view.get('todoToggleClicks$').map(getParentTodoId),
-		toggleAll$: view.get('toggleAllClicks$').map(toEmptyString),
-		startEditTodo$: view.get('todoLabelDblClicks$').map(getParentTodoId),
-		editTodo$: view.get('editTodoKeyUp$')
+		deleteTodo$: User.event$('.destroy', 'click').map(getParentTodoId),
+		deleteCompleteds$: User.event$('#clear-completed', 'click').map(toEmptyString),
+		toggleTodo$: User.event$('.toggle', 'change').map(getParentTodoId),
+		toggleAll$: User.event$('#toggle-all', 'click').map(toEmptyString),
+		startEditTodo$: User.event$('label', 'dblclick').map(getParentTodoId),
+		editTodo$: User.event$('.edit', 'keyup')
 			.map(function (ev) {
 				return {value: ev.target.value, index: getParentTodoId(ev)};
 			}),
-		doneEditing$: view.get('editTodoKeyUp$')
+		doneEditing$: User.event$('.edit', 'keyup')
 			.filter(function (ev) {
 				return ev.keyCode === ESC_KEY || ev.keyCode === ENTER_KEY;
 			})
-			.merge(view.get('editTodoBlur$'))
+			.merge(User.event$('.edit', 'blur'))
 			.map(toEmptyString),
-		clearInput$: view.get('newTodoKeyUp$')
+		clearInput$: User.event$('#new-todo', 'keyup')
 			.filter(function (ev) { return ev.keyCode === ESC_KEY; })
 			.map(toEmptyString)
 	}
