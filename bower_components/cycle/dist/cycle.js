@@ -17015,6 +17015,7 @@ function walk(a, b, patch, index) {
                     apply = appendPatch(apply,
                         new VPatch(VPatch.PROPS, a, propsPatch))
                 }
+                propsPatch = null
                 apply = diffChildren(a, b, patch, apply, index)
             } else {
                 apply = appendPatch(apply, new VPatch(VPatch.VNODE, a, b))
@@ -17046,6 +17047,7 @@ function walk(a, b, patch, index) {
     if (applyClear) {
         clearState(a, patch, index)
     }
+    apply = null
 }
 
 function diffChildren(a, b, patch, apply, index) {
@@ -17392,6 +17394,7 @@ module.exports = createView;
 'use strict';
 var InputProxy = require('./input-proxy');
 var Utils = require('./utils');
+var Rx = require('rx');
 
 function makeDispatchFunction(element, eventName) {
   return function dispatchCustomEvent(evData) {
@@ -17411,15 +17414,33 @@ function subscribeDispatchers(element, eventStreams) {
   if (!eventStreams || eventStreams === null || typeof eventStreams !== 'object') {
     return;
   }
+  var disposables = new Rx.CompositeDisposable();
   for (var streamName in eventStreams) {
     if (eventStreams.hasOwnProperty(streamName) &&
       Utils.endsWithDolarSign(streamName) &&
       typeof eventStreams[streamName].subscribe === 'function')
     {
       var eventName = streamName.slice(0, -1);
-      eventStreams[streamName].subscribe(makeDispatchFunction(element, eventName));
+      var disposable = eventStreams[streamName].subscribe(
+        makeDispatchFunction(element, eventName)
+      );
+      disposables.add(disposable);
     }
   }
+  return disposables;
+}
+
+function subscribeDispatchersWhenRootChanges(widget, eventStreams) {
+  widget._rootElem$
+    .distinctUntilChanged(Rx.helpers.identity,
+      function comparer(x, y) { return x && y && x.isEqualNode && x.isEqualNode(y); }
+    )
+    .subscribe(function (rootElem) {
+      if (widget.eventStreamsSubscriptions) {
+        widget.eventStreamsSubscriptions.dispose();
+      }
+      widget.eventStreamsSubscriptions = subscribeDispatchers(rootElem, eventStreams);
+    });
 }
 
 function createContainerElement(tagName, vtreeProperties) {
@@ -17431,21 +17452,32 @@ function createContainerElement(tagName, vtreeProperties) {
   return elem;
 }
 
+function replicateUserRootElem$(user, widget) {
+  user._rootElem$.subscribe(function (elem) { widget._rootElem$.onNext(elem); });
+}
+
+var customElementWidgetCounter = 0;
+
 function makeConstructor() {
   return function customElementConstructor(vtree) {
     this.type = 'Widget';
     this.properties = vtree.properties;
+    this._rootElem$ = new Rx.ReplaySubject(1);
+    this.key = ++customElementWidgetCounter;
   };
 }
 
 function makeInit(tagName, definitionFn) {
   var DOMUser = require('./dom-user');
   return function initCustomElement() {
-    var element = createContainerElement(tagName, this.properties);
+    var widget = this;
+    var element = createContainerElement(tagName, widget.properties);
     var user = new DOMUser(element);
     var eventStreams = definitionFn(user, element.cycleCustomElementProperties);
-    subscribeDispatchers(element, eventStreams);
-    this.update(null, element);
+    replicateUserRootElem$(user, widget);
+    widget.eventStreamsSubscriptions = subscribeDispatchers(element, eventStreams);
+    subscribeDispatchersWhenRootChanges(widget, eventStreams);
+    widget.update(null, element);
     return element;
   };
 }
@@ -17461,12 +17493,12 @@ function makeUpdate() {
     }
     var proxiedProps = elem.cycleCustomElementProperties.proxiedProps;
     for (var prop in proxiedProps) {
-      var propStreamName = prop;
-      var propName = prop.slice(0, -1);
-      if (proxiedProps.hasOwnProperty(propStreamName) &&
-        this.properties.hasOwnProperty(propName))
-      {
-        proxiedProps[propStreamName].onNext(this.properties[propName]);
+      if (proxiedProps.hasOwnProperty(prop)) {
+        var propStreamName = prop;
+        var propName = prop.slice(0, -1);
+        if (this.properties.hasOwnProperty(propName)) {
+          proxiedProps[propStreamName].onNext(this.properties[propName]);
+        }
       }
     }
   };
@@ -17478,7 +17510,7 @@ module.exports = {
   makeUpdate: makeUpdate
 };
 
-},{"./dom-user":51,"./input-proxy":53,"./utils":55}],47:[function(require,module,exports){
+},{"./dom-user":51,"./input-proxy":53,"./utils":55,"rx":8}],47:[function(require,module,exports){
 'use strict';
 var VirtualDOM = require('virtual-dom');
 var Rx = require('rx');
@@ -17843,19 +17875,49 @@ function isElement(o) {
   );
 }
 
+function getArrayOfAllWidgetRootElemStreams(vtree) {
+  if (vtree.type === 'Widget' && vtree._rootElem$) {
+    return [vtree._rootElem$];
+  }
+  // Or replace children recursively
+  var array = [];
+  if (Array.isArray(vtree.children)) {
+    for (var i = vtree.children.length - 1; i >= 0; i--) {
+      array = array.concat(getArrayOfAllWidgetRootElemStreams(vtree.children[i]));
+    }
+  }
+  return array;
+}
+
+function defineRootElemStream(user) {
+  // Create rootElem stream and automatic className correction
+  var originalClasses = (user._domContainer.className || '').trim().split(/\s+/);
+  user._rawRootElem$ = new Rx.Subject();
+  user._rootElem$ = user._rawRootElem$
+    .map(function fixRootElemClassName(rootElem) {
+      var previousClasses = rootElem.className.trim().split(/\s+/);
+      var missingClasses = originalClasses.filter(function (clss) {
+        return previousClasses.indexOf(clss) < 0;
+      });
+      rootElem.className = previousClasses.concat(missingClasses).join(' ');
+      return rootElem;
+    })
+    .shareReplay(1);
+}
+
 function DOMUser(container) {
   // Find and prepare the container
   this._domContainer = (typeof container === 'string') ?
     document.querySelector(container) :
     container;
-  this._rootNode$ = new Rx.ReplaySubject(1);
   // Check pre-conditions
   if (typeof container === 'string' && this._domContainer === null) {
     throw new Error('Cannot render into unknown element \'' + container + '\'');
   } else if (!isElement(this._domContainer)) {
     throw new Error('Given container is not a DOM element neither a selector string.');
   }
-  // Create node
+  defineRootElemStream(this);
+  // Create DataFlowNode with rendering logic
   var self = this;
   DataFlowNode.call(this, function injectIntoDOMUser(view) {
     return self._renderEvery(view.get('vtree$'));
@@ -17866,31 +17928,44 @@ DOMUser.prototype = Object.create(DataFlowNode.prototype);
 
 DOMUser.prototype._renderEvery = function renderEvery(vtree$) {
   var self = this;
-  var rootNode;
+  // Select the correct rootElem
+  var rootElem;
   if (self._domContainer.cycleCustomElementProperties) {
-    rootNode = self._domContainer;
+    rootElem = self._domContainer;
   } else {
-    rootNode = document.createElement('div');
+    rootElem = document.createElement('div');
     self._domContainer.innerHTML = '';
-    self._domContainer.appendChild(rootNode);
+    self._domContainer.appendChild(rootElem);
   }
-  self._rootNode$.onNext(rootNode);
-  return vtree$.startWith(VDOM.h())
+  // TODO Refactor/rework. Unclear why, but setTimeout this is necessary.
+  setTimeout(function () {
+    self._rawRootElem$.onNext(rootElem);
+  }, 0);
+  // Reactively render the vtree$ into the rootElem
+  return vtree$
+    .startWith(VDOM.h())
     .map(function renderingPreprocessing(vtree) {
       return self._replaceCustomElements(vtree);
     })
     .pairwise()
     .subscribe(function renderDiffAndPatch(pair) {
+      var oldVTree = pair[0];
+      var newVTree = pair[1];
+      if (typeof newVTree === 'undefined') {
+        return;
+      }
+      var arrayOfAll = getArrayOfAllWidgetRootElemStreams(newVTree);
+      if (arrayOfAll.length > 0) {
+        Rx.Observable.combineLatest(arrayOfAll, function () { return 0; }).first()
+          .subscribe(function () { self._rawRootElem$.onNext(rootElem); });
+      }
       try {
-        var oldVTree = pair[0];
-        var newVTree = pair[1];
-        if (typeof newVTree === 'undefined') {
-          return;
-        }
-        rootNode = VDOM.patch(rootNode, VDOM.diff(oldVTree, newVTree));
-        self._rootNode$.onNext(rootNode);
+        rootElem = VDOM.patch(rootElem, VDOM.diff(oldVTree, newVTree));
       } catch (err) {
         console.error(err);
+      }
+      if (arrayOfAll.length === 0) {
+        self._rawRootElem$.onNext(rootElem);
       }
     });
 };
@@ -17923,20 +17998,21 @@ DOMUser.prototype.event$ = function event$(selector, eventName) {
     throw new Error('DOMUser.event$ expects second argument to be a string ' +
       'representing the event type to listen for.');
   }
-  return this._rootNode$
-    .filter(function filterEventStream(rootNode) { return !!rootNode; })
-    .flatMapLatest(function flatMapEventStream(rootNode) {
-      var klass = selector.replace('.', '');
-      if (rootNode.className.search(new RegExp('\\b' + klass + '\\b')) >= 0) {
-        return Rx.Observable.fromEvent(rootNode, eventName);
-      }
-      var targetElements = rootNode.querySelectorAll(selector);
-      if (targetElements && targetElements.length > 0) {
-        return Rx.Observable.fromEvent(targetElements, eventName);
-      } else {
-        return Rx.Observable.empty();
-      }
-    });
+  return this._rootElem$.flatMapLatest(function flatMapDOMUserEventStream(rootElem) {
+    if (!rootElem) {
+      return Rx.Observable.empty();
+    }
+    var klass = selector.replace('.', '');
+    if (rootElem.className.search(new RegExp('\\b' + klass + '\\b')) >= 0) {
+      return Rx.Observable.fromEvent(rootElem, eventName);
+    }
+    var targetElements = rootElem.querySelectorAll(selector);
+    if (targetElements && targetElements.length > 0) {
+      return Rx.Observable.fromEvent(targetElements, eventName);
+    } else {
+      return Rx.Observable.empty();
+    }
+  });
 };
 
 DOMUser.registerCustomElement = function registerCustomElement(tagName, definitionFn) {
