@@ -1,88 +1,45 @@
 'use strict';
 /*global Cycle */
 
-function getFilterFn(route) {
-	switch (route) {
-		case '/active':
-			return function (task) { return task.completed === false; };
-		case '/completed':
-			return function (task) { return task.completed === true; };
-		default:
-			return function () { return true; }; // allow anything
+var TodosModel = Cycle.createModel(function (Intent, Initial) {
+	function getFilterFn(route) {
+		switch (route) {
+			case '/active':
+				return function (task) { return task.completed === false; };
+			case '/completed':
+				return function (task) { return task.completed === true; };
+			default:
+				return function () { return true; }; // allow anything
+		}
 	}
-}
 
-function determineTodosIndexes(todosData) {
-	todosData.list.forEach(function(todoData, index) {
-		todoData.index = index;
-	});
-	return todosData;
-}
-
-function determineFilter(todosData, route) {
-	todosData.filter = route.replace('/', '').trim();
-	todosData.filterFn = getFilterFn(route);
-	return todosData;
-}
-
-// Rx's missing golden operator
-function withLatest(A$, B$, combineFunc) {
-	var hotA$ = A$.publish().refCount();
-	return B$
-		.map(function (b) {
-			return hotA$.map(function (a) { return combineFunc(a, b); });
-		})
-		.switch();
-}
-
-var TodosModel = Cycle.createModel(function (intent, initial) {
-	var route$ = Rx.Observable.just('/').merge(intent.get('changeRoute$'));
-
-	var insertTodoMod$ = intent.get('insertTodo$')
-		.map(function (todoTitle) {
-			return function (todosData) {
-				todosData.list.push({
-					title: todoTitle,
-					completed: false,
-					editing: false
-				});
-				todosData.input = '';
-				return todosData;
-			};
-		});
-
-	var startEditTodoMod$ = intent.get('startEditTodo$')
-		.map(function (todoIndex) {
-			return function (todosData) {
-				todosData.list.forEach(function (todoData, index) {
-					todoData.editing = (index === todoIndex);
-				});
-				return todosData;
+	function searchTodoIndex(todosList, todoid) {
+		var top = todosList.length;
+		var bottom = 0;
+		var pointerId;
+		var index;
+		while (true) { // binary search
+			index = bottom + ((top - bottom) >> 1);
+			pointerId = todosList[index].id;
+			if (pointerId === todoid) {
+				return index;
+			} else if (pointerId < todoid) {
+				bottom = index;
+			} else if (pointerId > todoid) {
+				top = index;
 			}
-		});
+		}
+	}
 
-	var editTodoMod$ = intent.get('editTodo$')
-		.map(function (modObject) {
-			return function (todosData) {
-				todosData.list[modObject.index].title = modObject.value;
-				return todosData;
-			};
-		});
+	function determineFilter(todosData, route) {
+		todosData.filter = route.replace('/', '').trim();
+		todosData.filterFn = getFilterFn(route);
+		return todosData;
+	}
 
-	var stopEditingMod$ = withLatest(intent.get('doneEditing$'), editTodoMod$,
-		function(d, editMod) {
-			return function (todosData) {
-				todosData.list.forEach(function (todoData) {
-					todoData.editing = false;
-				});
-				todosData.list = todosData.list.filter(function (todoData) {
-					return todoData.title.trim().length > 0;
-				});
-				return editMod(todosData);
-			};
-		});
+	var route$ = Rx.Observable.just('/').merge(Intent.get('changeRoute$'));
 
-	var clearInputMod$ = intent.get('clearInput$')
+	var clearInputMod$ = Intent.get('clearInput$')
 		.map(function () {
 			return function (todosData) {
 				todosData.input = '';
@@ -90,7 +47,42 @@ var TodosModel = Cycle.createModel(function (intent, initial) {
 			}
 		});
 
-	var toggleAllMod$ = intent.get('toggleAll$')
+	var insertTodoMod$ = Intent.get('insertTodo$')
+		.map(function (todoTitle) {
+			return function (todosData) {
+				var lastId = todosData.list.length > 0 ?
+					todosData.list[todosData.list.length - 1].id :
+					0;
+				todosData.list.push({
+					id: lastId + 1,
+					title: todoTitle,
+					completed: false
+				});
+				todosData.input = '';
+				return todosData;
+			};
+		});
+
+	var editTodoMod$ = Intent.get('editTodo$')
+		.map(function (evdata) {
+			return function (todosData) {
+				var todoIndex = searchTodoIndex(todosData.list, evdata.id);
+				todosData.list[todoIndex].title = evdata.content;
+				return todosData;
+			}
+		});
+
+	var toggleTodoMod$ = Intent.get('toggleTodo$')
+		.map(function (todoid) {
+			return function (todosData) {
+				var todoIndex = searchTodoIndex(todosData.list, todoid);
+				var previousCompleted = todosData.list[todoIndex].completed;
+				todosData.list[todoIndex].completed = !previousCompleted;
+				return todosData;
+			}
+		});
+
+	var toggleAllMod$ = Intent.get('toggleAll$')
 		.map(function () {
 			return function (todosData) {
 				var allAreCompleted = todosData.list.reduce(function (x, y) {
@@ -103,24 +95,16 @@ var TodosModel = Cycle.createModel(function (intent, initial) {
 			}
 		});
 
-	var toggleTodoMod$ = intent.get('toggleTodo$')
-		.map(function (todoIndex) {
+	var deleteTodoMod$ = Intent.get('deleteTodo$')
+		.map(function (todoid) {
 			return function (todosData) {
-				var previousCompleted = todosData.list[todoIndex].completed;
-				todosData.list[todoIndex].completed = !previousCompleted;
-				return todosData;
-			}
-		});
-
-	var deleteTodoMod$ = intent.get('deleteTodo$')
-		.map(function (todoIndex) {
-			return function (todosData) {
+				var todoIndex = searchTodoIndex(todosData.list, todoid);
 				todosData.list.splice(todoIndex, 1);
 				return todosData;
 			}
 		});
 
-	var deleteCompletedsMod$ = intent.get('deleteCompleteds$')
+	var deleteCompletedsMod$ = Intent.get('deleteCompleteds$')
 		.map(function () {
 			return function (todosData) {
 				todosData.list = todosData.list.filter(function (todoData) {
@@ -132,18 +116,14 @@ var TodosModel = Cycle.createModel(function (intent, initial) {
 
 	var modifications$ = Rx.Observable.merge(
 		insertTodoMod$, deleteTodoMod$, toggleTodoMod$, toggleAllMod$,
-		clearInputMod$, deleteCompletedsMod$, startEditTodoMod$,
-		stopEditingMod$
+		clearInputMod$, deleteCompletedsMod$, editTodoMod$
 	);
 
 	return {
 		todos$: modifications$
-			.merge(initial.get('todosData$'))
-			.scan(function (todosData, modification) {
-				return modification(todosData);
-			})
-			.map(determineTodosIndexes)
+			.merge(Initial.get('todosData$'))
+			.scan(function (todosData, modFn) { return modFn(todosData); })
 			.combineLatest(route$, determineFilter)
-			.publish().refCount()
+			.share()
 	}
 });

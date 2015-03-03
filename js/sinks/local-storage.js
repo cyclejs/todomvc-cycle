@@ -9,7 +9,7 @@ var LocalStorageSink = Cycle.createDataFlowSink(function (todosModel) {
 				return {
 					title: todoData.title,
 					completed: todoData.completed,
-					index: todoData.index
+					id: todoData.id
 				};
 			})
 		};

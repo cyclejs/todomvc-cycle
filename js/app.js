@@ -1,8 +1,13 @@
 'use strict';
 /*global Cycle */
 
-Cycle.createRenderer('#todoapp').inject(TodosView);
+var ENTER_KEY = 13;
+var ESC_KEY = 27;
+
+var User = Cycle.createDOMUser('#todoapp');
+
 LocalStorageSink.inject(TodosModel);
-TodosIntent.inject(TodosView);
+User.inject(TodosView);
 TodosView.inject(TodosModel);
 TodosModel.inject(TodosIntent, TodosModelSource);
+TodosIntent.inject(User);
