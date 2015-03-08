@@ -35,6 +35,7 @@ var TodosView = Cycle.createView(function (Model) {
 				.filter(todosData.filterFn)
 				.map(function (todoData) {
 					return h('todo-item.todo-item', {
+						key: todoData.id,
 						todoid: todoData.id,
 						content: todoData.title,
 						completed: todoData.completed
