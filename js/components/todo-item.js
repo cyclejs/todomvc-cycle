@@ -7,9 +7,10 @@ Cycle.registerCustomElement('todo-item', function (User, Properties) {
 			id$: Properties.get('todoid$').shareReplay(1),
 			content$: Properties.get('content$').startWith(''),
 			completed$: Properties.get('completed$').startWith(false),
-			editing$: Intent.get('startEdit$')
-				.map(function () { return true; })
-				.startWith(false)
+			editing$: Rx.Observable.merge(
+				Intent.get('startEdit$').map(function () { return true; }),
+				Intent.get('stopEdit$').map(function () { return false; })
+			).startWith(false)
 		};
 	});
 
@@ -64,7 +65,8 @@ Cycle.registerCustomElement('todo-item', function (User, Properties) {
 					return ev.keyCode === ESC_KEY || ev.keyCode === ENTER_KEY;
 				})
 				.merge(User.event$('.edit', 'blur'))
-				.map(function (ev) { return ev.target.value; })
+				.map(function (ev) { return ev.currentTarget.value; })
+				.share()
 		};
 	});
 

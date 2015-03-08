@@ -1,6 +1,6 @@
 {
   "name": "cycle",
-  "version": "0.14.4",
+  "version": "0.15.0",
   "homepage": "https://github.com/staltz/cycle",
   "authors": [
     "Andre Staltz"
@@ -29,13 +29,13 @@
     "test",
     "tests"
   ],
-  "_release": "0.14.4",
+  "_release": "0.15.0",
   "_resolution": {
     "type": "version",
-    "tag": "v0.14.4",
-    "commit": "26efdf7e946ab5767ab7a7698d2a56150a56e69e"
+    "tag": "v0.15.0",
+    "commit": "3c7424e60896a576960c8d6d6abf468e4e89becb"
   },
   "_source": "git://github.com/staltz/cycle.git",
-  "_target": "^0.14.4",
+  "_target": "^0.15.0",
   "_originalSource": "cycle"
 }
