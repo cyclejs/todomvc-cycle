@@ -36,28 +36,28 @@ DOM Rendering.
 ## Example
 
 ```javascript
-var Cycle = require('cyclejs');
-var h = Cycle.h;
+import Cycle from 'cyclejs';
+let {Rx, h} = Cycle;
 
-var Model = Cycle.createModel(Intent =>
+let Model = Cycle.createModel(Intent =>
   ({name$: Intent.get('changeName$').startWith('')})
 });
 
-var View = Cycle.createView(Model =>
+let View = Cycle.createView(Model =>
   ({
     vtree$: Model.get('name$').map(name =>
       h('div', [
         h('label', 'Name:'),
         h('input.field', {attributes: {type: 'text'}}),
-        h('h1.header', 'Hello ' + name)
+        h('h1.header', `Hello ${name}`)
       ])
     )
   })
 );
 
-var User = Cycle.createDOMUser('.js-container');
+let User = Cycle.createDOMUser('.js-container');
 
-var Intent = Cycle.createIntent(User =>
+let Intent = Cycle.createIntent(User =>
   ({changeName$: User.event$('.field', 'input').map(ev => ev.target.value)})
 );
 
@@ -125,6 +125,14 @@ are a couple of strong reasons:
 * Ask "_how do I...?_" questions in Gitter: <br />[![Gitter](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/staltz/cycle?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 * Propose and discuss significant changes as a GitHub issues
 
+### Resources
+
+- [Cycle.js examples using JSX and ES6](https://github.com/ivan-kleshnin/cyclejs-examples) by [@ivan-kleshnin](https://github.com/ivan-kleshnin)
+- [TodoMVP, an example webapp written in Cycle.js](https://github.com/cgeorg/todomvp) by [@cgeorg](https://github.com/cgeorg)
+- [sinject, a dependency injection tool supporting Cycle's circular dependencies](https://github.com/cgeorg/sinject) by [@cgeorg](https://github.com/cgeorg)
+- [Slack trend searching written in Cycle.js](https://github.com/grozen/trends-cycle) by [@grozen](https://github.com/grozen)
+- [RxMarbles is written in Cycle.js](https://github.com/staltz/rxmarbles)
+
 ## Disclaimer
 
 ### Work in progress
@@ -135,7 +143,7 @@ forever, either. ;)
 
 Prior to v1.0.0, the versions will follow the convention: improvements that break backwards
 compatibility increment the minor number, any other improvements will increment the patch
-number. After v1.0.0, we will follow [http://semver.org/](semver).
+number. After v1.0.0, we will follow [semver](http://semver.org/).
 
 ## Acknowledgements
 
