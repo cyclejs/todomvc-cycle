@@ -3,7 +3,8 @@
 <head>
 	<meta charset="utf-8">
 	<title>Cycle • TodoMVC</title>
-	<link rel="stylesheet" href="bower_components/todomvc-common/base.css">
+	<link href="node_modules/todomvc-common/base.css" rel="stylesheet">
+	<link href="node_modules/todomvc-app-css/index.css" rel="stylesheet">
 </head>
 <body>
 <section id="todoapp"></section>
@@ -12,15 +13,7 @@
 	<p><a href="http://github.com/staltz/todomvc-cycle">Source code</a></p>
 	<p>Created by <a href="http://andre.staltz.com">Andre Staltz</a></p>
 </footer>
-<script src="bower_components/todomvc-common/base.js"></script>
-<script src="bower_components/cycle/dist/cycle.js"></script>
-<script type="application/javascript">var Rx = Cycle.Rx;</script>
-<script src="js/components/todo-item.js"></script>
-<script src="js/sources/todos.js"></script>
-<script src="js/models/todos.js"></script>
-<script src="js/views/todos.js"></script>
-<script src="js/intents/todos.js"></script>
-<script src="js/sinks/local-storage.js"></script>
+<script src="node_modules/todomvc-common/base.js"></script>
 <script src="js/app.js"></script>
 </body>
 </html>

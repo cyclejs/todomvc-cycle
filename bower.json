@@ -1,8 +1,0 @@
-{
-  "name": "todomvc-cycle",
-  "version": "0.0.0",
-  "dependencies": {
-    "cycle": "^0.18.1",
-    "todomvc-common": "~0.3.0"
-  }
-}
