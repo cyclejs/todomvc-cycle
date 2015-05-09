@@ -33,7 +33,7 @@ function searchTodoIndex(todosList, todoid) {
   }
 }
 
-function model(intent, source) {
+function makeModification$(intent) {
   let clearInputMod$ = intent.clearInput$.map(() => (todosData) => {
     todosData.input = '';
     return todosData;
@@ -86,11 +86,14 @@ function model(intent, source) {
     return todosData
   });
 
-  let modification$ = Cycle.Rx.Observable.merge(
+  return Cycle.Rx.Observable.merge(
     insertTodoMod$, deleteTodoMod$, toggleTodoMod$, toggleAllMod$,
     clearInputMod$, deleteCompletedsMod$, editTodoMod$
   );
+}
 
+function model(intent, source) {
+  let modification$ = makeModification$(intent);
   let route$ = Cycle.Rx.Observable.just('/').merge(intent.changeRoute$);
 
   return modification$
