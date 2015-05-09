@@ -14721,21 +14721,19 @@ var Rx = _cyclejs2['default'].Rx;
 var h = _cyclejs2['default'].h;
 
 _cyclejs2['default'].registerCustomElement('todo-item', function (interactions, props) {
-  var ENTER_KEY = 13;
-  var ESC_KEY = 27;
   var intent = {
     destroy$: interactions.get('.destroy', 'click'),
     toggle$: interactions.get('.toggle', 'change'),
     startEdit$: interactions.get('label', 'dblclick'),
     stopEdit$: interactions.get('.edit', 'keyup').filter(function (ev) {
-      return ev.keyCode === ESC_KEY || ev.keyCode === ENTER_KEY;
+      return ev.keyCode === _utils.ESC_KEY || ev.keyCode === _utils.ENTER_KEY;
     }).merge(interactions.get('.edit', 'blur')).map(function (ev) {
       return ev.currentTarget.value;
     }).share()
   };
 
   var propId$ = props.get('todoid').startWith(0).shareReplay(1);
-  var propContent$ = props.get('content').startWith('i');
+  var propContent$ = props.get('content').startWith('');
   var propCompleted$ = props.get('completed').startWith(false);
 
   var editing$ = Rx.Observable.merge(intent.startEdit$.map(function () {
@@ -14791,10 +14789,9 @@ var _cyclejs = require('cyclejs');
 
 var _cyclejs2 = _interopRequireDefault(_cyclejs);
 
-'use strict';
+var _utils = require('../utils');
 
-var ENTER_KEY = 13;
-var ESC_KEY = 27;
+'use strict';
 
 function intent(interactions) {
   return {
@@ -14803,12 +14800,12 @@ function intent(interactions) {
     }).startWith(window.location.hash.replace('#', '')),
 
     clearInput$: interactions.get('#new-todo', 'keyup').filter(function (ev) {
-      return ev.keyCode === ESC_KEY;
+      return ev.keyCode === _utils.ESC_KEY;
     }),
 
     insertTodo$: interactions.get('#new-todo', 'keyup').filter(function (ev) {
       var trimmedVal = String(ev.target.value).trim();
-      return ev.keyCode === ENTER_KEY && trimmedVal;
+      return ev.keyCode === _utils.ENTER_KEY && trimmedVal;
     }).map(function (ev) {
       return String(ev.target.value).trim();
     }),
@@ -14834,7 +14831,7 @@ function intent(interactions) {
 ;
 module.exports = exports['default'];
 
-},{"cyclejs":5}],113:[function(require,module,exports){
+},{"../utils":116,"cyclejs":5}],113:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, '__esModule', {
@@ -14891,7 +14888,7 @@ function searchTodoIndex(todosList, todoid) {
   }
 }
 
-function model(intent, source) {
+function makeModification$(intent) {
   var clearInputMod$ = intent.clearInput$.map(function () {
     return function (todosData) {
       todosData.input = '';
@@ -14958,8 +14955,11 @@ function model(intent, source) {
     };
   });
 
-  var modification$ = _cyclejs2['default'].Rx.Observable.merge(insertTodoMod$, deleteTodoMod$, toggleTodoMod$, toggleAllMod$, clearInputMod$, deleteCompletedsMod$, editTodoMod$);
+  return _cyclejs2['default'].Rx.Observable.merge(insertTodoMod$, deleteTodoMod$, toggleTodoMod$, toggleAllMod$, clearInputMod$, deleteCompletedsMod$, editTodoMod$);
+}
 
+function model(intent, source) {
+  var modification$ = makeModification$(intent);
   var route$ = _cyclejs2['default'].Rx.Observable.just('/').merge(intent.changeRoute$);
 
   return modification$.merge(source.todosData$).scan(function (todosData, modFn) {
@@ -15076,7 +15076,12 @@ function propHook(fn) {
   return new PropertyHook(fn);
 }
 
+var ENTER_KEY = 13;
+var ESC_KEY = 27;
+
 exports.propHook = propHook;
+exports.ENTER_KEY = ENTER_KEY;
+exports.ESC_KEY = ESC_KEY;
 
 },{}],117:[function(require,module,exports){
 'use strict';
@@ -15098,56 +15103,56 @@ var _utils = require('../utils');
 var Rx = _cyclejs2['default'].Rx;
 var h = _cyclejs2['default'].h;
 
+function vrenderHeader(todosData) {
+  return h('header#header', [h('h1', 'todos'), h('input#new-todo', {
+    type: 'text',
+    value: _utils.propHook(function (elem) {
+      elem.value = todosData.input;
+    }),
+    attributes: {
+      placeholder: 'What needs to be done?'
+    },
+    autofocus: true,
+    name: 'newTodo'
+  })]);
+}
+
+function vrenderMainSection(todosData) {
+  var allCompleted = todosData.list.reduce(function (x, y) {
+    return x && y.completed;
+  }, true);
+  return h('section#main', {
+    style: { 'display': todosData.list.length ? '' : 'none' }
+  }, [h('input#toggle-all', {
+    type: 'checkbox',
+    checked: allCompleted
+  }), h('ul#todo-list', todosData.list.filter(todosData.filterFn).map(function (todoData) {
+    return h('todo-item.todo-item', {
+      key: todoData.id,
+      todoid: todoData.id,
+      content: todoData.title,
+      completed: todoData.completed
+    });
+  }))]);
+}
+
+function vrenderFooter(todosData) {
+  var amountCompleted = todosData.list.filter(function (todoData) {
+    return todoData.completed;
+  }).length;
+  var amountActive = todosData.list.length - amountCompleted;
+  return h('footer#footer', {
+    style: { 'display': todosData.list.length ? '' : 'none' }
+  }, [h('span#todo-count', [h('strong', String(amountActive)), ' item' + (amountActive !== 1 ? 's' : '') + ' left']), h('ul#filters', [h('li', [h('a' + (todosData.filter === '' ? '.selected' : ''), {
+    attributes: { 'href': '#/' }
+  }, 'All')]), h('li', [h('a' + (todosData.filter === 'active' ? '.selected' : ''), {
+    attributes: { 'href': '#/active' }
+  }, 'Active')]), h('li', [h('a' + (todosData.filter === 'completed' ? '.selected' : ''), {
+    attributes: { 'href': '#/completed' }
+  }, 'Completed')])]), amountCompleted > 0 ? h('button#clear-completed', 'Clear completed (' + amountCompleted + ')') : null]);
+}
+
 function view(todos$) {
-  function vrenderHeader(todosData) {
-    return h('header#header', [h('h1', 'todos'), h('input#new-todo', {
-      type: 'text',
-      value: _utils.propHook(function (elem) {
-        elem.value = todosData.input;
-      }),
-      attributes: {
-        placeholder: 'What needs to be done?'
-      },
-      autofocus: true,
-      name: 'newTodo'
-    })]);
-  }
-
-  function vrenderMainSection(todosData) {
-    var allCompleted = todosData.list.reduce(function (x, y) {
-      return x && y.completed;
-    }, true);
-    return h('section#main', {
-      style: { 'display': todosData.list.length ? '' : 'none' }
-    }, [h('input#toggle-all', {
-      type: 'checkbox',
-      checked: allCompleted
-    }), h('ul#todo-list', todosData.list.filter(todosData.filterFn).map(function (todoData) {
-      return h('todo-item.todo-item', {
-        key: todoData.id,
-        todoid: todoData.id,
-        content: todoData.title,
-        completed: todoData.completed
-      });
-    }))]);
-  }
-
-  function vrenderFooter(todosData) {
-    var amountCompleted = todosData.list.filter(function (todoData) {
-      return todoData.completed;
-    }).length;
-    var amountActive = todosData.list.length - amountCompleted;
-    return h('footer#footer', {
-      style: { 'display': todosData.list.length ? '' : 'none' }
-    }, [h('span#todo-count', [h('strong', String(amountActive)), ' item' + (amountActive !== 1 ? 's' : '') + ' left']), h('ul#filters', [h('li', [h('a' + (todosData.filter === '' ? '.selected' : ''), {
-      attributes: { 'href': '#/' }
-    }, 'All')]), h('li', [h('a' + (todosData.filter === 'active' ? '.selected' : ''), {
-      attributes: { 'href': '#/active' }
-    }, 'Active')]), h('li', [h('a' + (todosData.filter === 'completed' ? '.selected' : ''), {
-      attributes: { 'href': '#/completed' }
-    }, 'Completed')])]), amountCompleted > 0 ? h('button#clear-completed', 'Clear completed (' + amountCompleted + ')') : null]);
-  }
-
   return todos$.map(function (todos) {
     return h('div', [vrenderHeader(todos), vrenderMainSection(todos), vrenderFooter(todos)]);
   });
