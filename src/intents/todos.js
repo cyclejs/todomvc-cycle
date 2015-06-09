@@ -1,4 +1,3 @@
-'use strict';
 import Cycle from 'cyclejs';
 import {ENTER_KEY, ESC_KEY} from '../utils';
 

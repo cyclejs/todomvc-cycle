@@ -1,4 +1,3 @@
-'use strict';
 import Cycle from 'cyclejs';
 let {Rx, h} = Cycle;
 import {propHook} from '../utils';
