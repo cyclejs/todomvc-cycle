@@ -1,4 +1,3 @@
-'use strict';
 import Cycle from 'cyclejs';
 
 function getFilterFn(route) {

@@ -1,4 +1,3 @@
-'use strict';
 import Cycle from 'cyclejs';
 import './components/todo-item';
 import source from './sources/todos';
