@@ -7,7 +7,7 @@ function vrenderHeader(todosData) {
     h('h1', 'todos'),
     h('input#new-todo', {
       type: 'text',
-      value: propHook(elem => { elem.value = todosData.input; }),
+      value: propHook(elem => elem.value = todosData.get('input')),
       attributes: {
         placeholder: 'What needs to be done?'
       },
@@ -18,16 +18,19 @@ function vrenderHeader(todosData) {
 }
 
 function vrenderMainSection(todosData) {
-  let allCompleted = todosData.list.reduce((x, y) => x && y.completed, true);
+  let list = todosData.get('list');
+  let allCompleted = list.every(x => x.get('completed'));
+
   return h('section#main', {
-    style: {'display': todosData.list.length ? '' : 'none'}
+    style: {'display': list.size ? '' : 'none'}
   }, [
     h('input#toggle-all', {
       type: 'checkbox',
       checked: allCompleted
     }),
-    h('ul#todo-list', todosData.list
-      .filter(todosData.filterFn)
+    h('ul#todo-list', list
+      .filter(todosData.get('filterFn'))
+      .toJS()
       .map(todoData =>
         h('todo-item.todo-item', {
           key: todoData.id,
@@ -41,12 +44,13 @@ function vrenderMainSection(todosData) {
 }
 
 function vrenderFooter(todosData) {
-  let amountCompleted = todosData.list
-    .filter(todoData => todoData.completed)
-    .length;
-  let amountActive = todosData.list.length - amountCompleted;
+  let list = todosData.get('list');
+  let filter = todosData.get('filter');
+  let amountCompleted = list.count(x => x.get('completed'));
+  let amountActive = list.size - amountCompleted;
+
   return h('footer#footer', {
-    style: {'display': todosData.list.length ? '' : 'none'}
+    style: {'display': list.size ? '' : 'none'}
   }, [
     h('span#todo-count', [
       h('strong', String(amountActive)),
@@ -54,17 +58,17 @@ function vrenderFooter(todosData) {
     ]),
     h('ul#filters', [
       h('li', [
-        h('a' + (todosData.filter === '' ? '.selected' : ''), {
+        h('a' + (filter === '' ? '.selected' : ''), {
           attributes: {'href': '#/'}
         }, 'All')
       ]),
       h('li', [
-        h('a' + (todosData.filter === 'active' ? '.selected' : ''), {
+        h('a' + (filter === 'active' ? '.selected' : ''), {
           attributes: {'href': '#/active'}
         }, 'Active')
       ]),
       h('li', [
-        h('a' + (todosData.filter === 'completed' ? '.selected' : ''), {
+        h('a' + (filter === 'completed' ? '.selected' : ''), {
           attributes: {'href': '#/completed'}
         }, 'Completed')
       ])

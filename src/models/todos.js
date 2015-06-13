@@ -1,88 +1,73 @@
 import Cycle from 'cyclejs';
+import {Map} from 'immutable';
 
 function getFilterFn(route) {
   switch (route) {
-    case '/active': return (task => task.completed === false);
-    case '/completed': return (task => task.completed === true);
+    case '/active': return (x => !x.get('completed'));
+    case '/completed': return (x => x.get('completed'));
     default: return () => true; // allow anything
   }
 }
 
 function determineFilter(todosData, route) {
-  todosData.filter = route.replace('/', '').trim();
-  todosData.filterFn = getFilterFn(route);
-  return todosData;
-}
-
-function searchTodoIndex(todosList, todoid) {
-  let top = todosList.length;
-  let bottom = 0;
-  let pointerId;
-  let index;
-  while (true) { // binary search
-    index = bottom + ((top - bottom) >> 1);
-    pointerId = todosList[index].id;
-    if (pointerId === todoid) {
-      return index;
-    } else if (pointerId < todoid) {
-      bottom = index;
-    } else if (pointerId > todoid) {
-      top = index;
-    }
-  }
+  return todosData
+    .set('filter', route.replace('/', '').trim())
+    .set('filterFn', getFilterFn(route));
 }
 
 function makeModification$(intent) {
-  let clearInputMod$ = intent.clearInput$.map(() => (todosData) => {
-    todosData.input = '';
-    return todosData;
+  let clearInputMod$ = intent.clearInput$.map(() => todosData => {
+    return todosData.set('input', '');
   });
 
-  let insertTodoMod$ = intent.insertTodo$.map((todoTitle) => (todosData) => {
-    let lastId = todosData.list.length > 0 ?
-      todosData.list[todosData.list.length - 1].id :
-      0;
-    todosData.list.push({
+  let insertTodoMod$ = intent.insertTodo$.map(todoTitle => todosData => {
+    let list = todosData.get('list');
+    let lastId = list.size ? list.last().get('id') : 0;
+
+    let todo = Map({
       id: lastId + 1,
       title: todoTitle,
       completed: false
     });
-    todosData.input = '';
-    return todosData;
+
+    return todosData.update('list', list => list.push(todo).set('input', ''));
   });
 
-  let editTodoMod$ = intent.editTodo$.map((evdata) => (todosData) => {
-    let todoIndex = searchTodoIndex(todosData.list, evdata.id);
-    todosData.list[todoIndex].title = evdata.content;
-    return todosData;
+  let editTodoMod$ = intent.editTodo$.map(evdata => todosData => {
+    let todoIndex = todosData.get('list')
+      .findIndex(x => x.get('id') === evdata.id);
+
+    return todosData.update('list', list =>
+      list.update(todoIndex, x => x.set('title', evdata.content))
+    );
   });
 
-  let toggleTodoMod$ = intent.toggleTodo$.map((todoid) => (todosData) => {
-    let todoIndex = searchTodoIndex(todosData.list, todoid);
-    let previousCompleted = todosData.list[todoIndex].completed;
-    todosData.list[todoIndex].completed = !previousCompleted;
-    return todosData;
+  let toggleTodoMod$ = intent.toggleTodo$.map(todoId => todosData => {
+    let todoIndex = todosData.get('list')
+      .findIndex(x => x.get('id') === todoId);
+
+    return todosData.update('list', list =>
+      list.update(todoIndex, x => x.set('completed', !x.get('completed')))
+    );
   });
 
-  let toggleAllMod$ = intent.toggleAll$.map(() => (todosData) => {
-    let allAreCompleted = todosData.list
-      .reduce((x, y) => x && y.completed, true);
-    todosData.list.forEach((todoData) => {
-      todoData.completed = allAreCompleted ? false : true;
-    });
-    return todosData;
+  let toggleAllMod$ = intent.toggleAll$.map(() => todosData => {
+    let state = todosData.get('list').some(x => !x.get('completed'));
+    return todosData.update('list', list =>
+      list.map(x => x.set('completed', state))
+    );
   });
 
-  let deleteTodoMod$ = intent.deleteTodo$.map((todoid) => (todosData) => {
-    let todoIndex = searchTodoIndex(todosData.list, todoid);
-    todosData.list.splice(todoIndex, 1);
-    return todosData;
+  let deleteTodoMod$ = intent.deleteTodo$.map(todoId => todosData => {
+    return todosData.update('list', list =>
+      list.filter(x => x.get('id') !== todoId)
+    );
   });
 
-  let deleteCompletedsMod$ = intent.deleteCompleteds$.map(() => (todosData) => {
-    todosData.list = todosData.list
-      .filter(todoData => todoData.completed === false);
-    return todosData
+  let deleteCompletedsMod$ = intent.deleteCompleteds$.map(() => todosData => {
+    return todosData.update('list', list =>
+      list.filter(x => !x.get('completed'))
+    );
   });
 
   return Cycle.Rx.Observable.merge(

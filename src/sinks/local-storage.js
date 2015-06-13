@@ -1,13 +1,9 @@
 export default function localStorageSink(todosData) {
+
   // Observe all todos data and save them to localStorage
   let savedTodosData = {
-    list: todosData.list.map(todoData =>
-      ({
-        title: todoData.title,
-        completed: todoData.completed,
-        id: todoData.id
-      })
-    )
+    list: todosData.get('list').filter(x => x ).toJS()
   };
+
   localStorage.setItem('todos-cycle', JSON.stringify(savedTodosData))
 };

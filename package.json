@@ -9,16 +9,16 @@
   "license": "MIT",
   "private": true,
   "devDependencies": {
+    "babelify": "^6.0.2",
+    "browserify": "^10.0.0",
     "cyclejs": "0.21.1",
+    "immutable": "^3.7.3",
     "todomvc-app-css": "^1.0.0",
     "todomvc-common": "^1.0.1",
-    "babel": "^5.1.13",
-    "babelify": "^6.0.2",
-    "browserify": "^10.0.0"
+    "uglifyjs": "^2.4.10"
   },
   "scripts": {
-    "build-debug": "mkdir -p js && browserify src/app.js -t babelify --outfile js/app.js",
-    "uglify": "uglifyjs js/app.js -o js/app.min.js",
-    "build": "npm run build-debug && npm run uglify"
+    "build-debug": "browserify src/app.js -d -t babelify > js/app.js",
+    "build": "browserify src/app.js -t babelify | uglifyjs -c > js/app.js"
   }
 }
