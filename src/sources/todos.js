@@ -1,28 +1,16 @@
 import Cycle from 'cyclejs';
+import {fromJS} from 'immutable';
 
-function merge() {
-  let result = {};
-  for (let i = 0; i < arguments.length; i++) {
-    let object = arguments[i];
-    for (let key in object) {
-      if (object.hasOwnProperty(key)) {
-        result[key] = object[key];
-      }
-    }
-  }
-  return result;
-}
-
-let defaultTodosData = {
+let defaultTodosData = fromJS({
   list: [],
   input: '',
   filter: '',
   filterFn: () => true // allow anything
-};
+});
 
 let storedTodosData = JSON.parse(localStorage.getItem('todos-cycle')) || {};
 
-let initialTodosData = merge(defaultTodosData, storedTodosData);
+let initialTodosData = defaultTodosData.merge(storedTodosData);
 
 export default {
   todosData$: Cycle.Rx.Observable.just(initialTodosData)
