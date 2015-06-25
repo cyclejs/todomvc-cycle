@@ -1,5 +1,4 @@
-'use strict';
-import Cycle from 'cyclejs';
+import {Rx} from '@cycle/core';
 
 function merge() {
   let result = {};
@@ -26,5 +25,5 @@ let storedTodosData = JSON.parse(localStorage.getItem('todos-cycle')) || {};
 let initialTodosData = merge(defaultTodosData, storedTodosData);
 
 export default {
-  todosData$: Cycle.Rx.Observable.just(initialTodosData)
+  todosData$: Rx.Observable.just(initialTodosData)
 };

@@ -1,6 +1,5 @@
-'use strict';
-import Cycle from 'cyclejs';
-let {Rx, h} = Cycle;
+import {Rx} from '@cycle/core';
+import {h} from '@cycle/web';
 import {propHook} from '../utils';
 
 function vrenderHeader(todosData) {
@@ -78,11 +77,13 @@ function vrenderFooter(todosData) {
 }
 
 export default function view(todos$) {
-  return todos$.map(todos =>
-    h('div', [
-      vrenderHeader(todos),
-      vrenderMainSection(todos),
-      vrenderFooter(todos)
-    ])
-  );
+  return {
+    DOM: todos$.map(todos =>
+      h('div', [
+        vrenderHeader(todos),
+        vrenderMainSection(todos),
+        vrenderFooter(todos)
+      ])
+    )
+  };
 };

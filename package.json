@@ -9,7 +9,8 @@
   "license": "MIT",
   "private": true,
   "devDependencies": {
-    "cyclejs": "0.21.1",
+    "@cycle/core": "1.0.0-rc1",
+    "@cycle/web": "1.0.x",
     "todomvc-app-css": "^1.0.0",
     "todomvc-common": "^1.0.1",
     "babel": "^5.1.13",
