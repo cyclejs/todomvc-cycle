@@ -1,4 +1,3 @@
-'use strict';
 import Cycle from '@cycle/core';
 import CycleWeb from '@cycle/web';
 import todoItemComponent from './components/todo-item';

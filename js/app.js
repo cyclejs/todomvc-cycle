@@ -15593,8 +15593,6 @@ var _cycleWeb = require('@cycle/web');
 
 var _utils = require('../utils');
 
-'use strict';
-
 function todoItemComponent(drivers) {
   var intent = {
     destroy$: drivers.DOM.get('.destroy', 'click'),
@@ -15671,8 +15669,6 @@ var _cycleCore = require('@cycle/core');
 
 var _utils = require('../utils');
 
-'use strict';
-
 function intent(domDriver) {
   return {
     changeRoute$: _cycleCore.Rx.Observable.fromEvent(window, 'hashchange').map(function (ev) {
@@ -15719,8 +15715,6 @@ Object.defineProperty(exports, '__esModule', {
 });
 
 var _cycleCore = require('@cycle/core');
-
-'use strict';
 
 function getFilterFn(route) {
   switch (route) {
@@ -15853,7 +15847,6 @@ Object.defineProperty(exports, '__esModule', {
   value: true
 });
 exports['default'] = localStorageSink;
-'use strict';
 
 function localStorageSink(todosData) {
   // Observe all todos data and save them to localStorage
@@ -15880,8 +15873,6 @@ Object.defineProperty(exports, '__esModule', {
 });
 
 var _cycleCore = require('@cycle/core');
-
-'use strict';
 
 function merge() {
   var result = {};
@@ -15915,17 +15906,15 @@ exports['default'] = {
 module.exports = exports['default'];
 
 },{"@cycle/core":1}],120:[function(require,module,exports){
-'use strict';
+"use strict";
 
-Object.defineProperty(exports, '__esModule', {
+Object.defineProperty(exports, "__esModule", {
   value: true
 });
 
-var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
 
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
-
-'use strict';
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
 var PropertyHook = (function () {
   function PropertyHook(fn) {
@@ -15935,7 +15924,7 @@ var PropertyHook = (function () {
   }
 
   _createClass(PropertyHook, [{
-    key: 'hook',
+    key: "hook",
     value: function hook() {
       this.fn.apply(this, arguments);
     }
@@ -15968,8 +15957,6 @@ var _cycleCore = require('@cycle/core');
 var _cycleWeb = require('@cycle/web');
 
 var _utils = require('../utils');
-
-'use strict';
 
 function vrenderHeader(todosData) {
   return _cycleWeb.h('header#header', [_cycleWeb.h('h1', 'todos'), _cycleWeb.h('input#new-todo', {
@@ -16067,8 +16054,6 @@ var _viewsTodos2 = _interopRequireDefault(_viewsTodos);
 var _sinksLocalStorageJs = require('./sinks/local-storage.js');
 
 var _sinksLocalStorageJs2 = _interopRequireDefault(_sinksLocalStorageJs);
-
-'use strict';
 
 function main(drivers) {
   var todos$ = _modelsTodos2['default'](_intentsTodos2['default'](drivers.DOM), _sourcesTodos2['default']);

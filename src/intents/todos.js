@@ -1,4 +1,3 @@
-'use strict';
 import {Rx} from '@cycle/core';
 import {ENTER_KEY, ESC_KEY} from '../utils';
 

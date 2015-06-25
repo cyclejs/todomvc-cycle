@@ -1,5 +1,3 @@
-'use strict';
-
 export default function localStorageSink(todosData) {
   // Observe all todos data and save them to localStorage
   let savedTodosData = {

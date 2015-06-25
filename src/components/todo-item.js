@@ -1,4 +1,3 @@
-'use strict';
 import {Rx} from '@cycle/core';
 import {h} from '@cycle/web';
 import {propHook, ENTER_KEY, ESC_KEY} from '../utils';

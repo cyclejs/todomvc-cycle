@@ -1,4 +1,3 @@
-'use strict';
 import {Rx} from '@cycle/core';
 
 function merge() {
