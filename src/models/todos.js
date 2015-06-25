@@ -1,5 +1,5 @@
 'use strict';
-import Cycle from 'cyclejs';
+import {Rx} from '@cycle/core';
 
 function getFilterFn(route) {
   switch (route) {
@@ -86,7 +86,7 @@ function makeModification$(intent) {
     return todosData
   });
 
-  return Cycle.Rx.Observable.merge(
+  return Rx.Observable.merge(
     insertTodoMod$, deleteTodoMod$, toggleTodoMod$, toggleAllMod$,
     clearInputMod$, deleteCompletedsMod$, editTodoMod$
   );
@@ -94,7 +94,7 @@ function makeModification$(intent) {
 
 function model(intent, source) {
   let modification$ = makeModification$(intent);
-  let route$ = Cycle.Rx.Observable.just('/').merge(intent.changeRoute$);
+  let route$ = Rx.Observable.just('/').merge(intent.changeRoute$);
 
   return modification$
     .merge(source.todosData$)

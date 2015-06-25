@@ -1,23 +1,22 @@
 'use strict';
-import Cycle from 'cyclejs';
-let {Rx, h} = Cycle;
+import {Rx} from '@cycle/core';
+import {h} from '@cycle/web';
 import {propHook, ENTER_KEY, ESC_KEY} from '../utils';
 
-Cycle.registerCustomElement('todo-item', function (interactions, props) {
+function todoItemComponent(drivers) {
   let intent = {
-    destroy$: interactions.get('.destroy', 'click'),
-    toggle$: interactions.get('.toggle', 'change'),
-    startEdit$: interactions.get('label', 'dblclick'),
-    stopEdit$: interactions.get('.edit', 'keyup')
+    destroy$: drivers.DOM.get('.destroy', 'click'),
+    toggle$: drivers.DOM.get('.toggle', 'change'),
+    startEdit$: drivers.DOM.get('label', 'dblclick'),
+    stopEdit$: drivers.DOM.get('.edit', 'keyup')
       .filter(ev => ev.keyCode === ESC_KEY || ev.keyCode === ENTER_KEY)
-      .merge(interactions.get('.edit', 'blur'))
+      .merge(drivers.DOM.get('.edit', 'blur'))
       .map(ev => ev.currentTarget.value)
       .share()
   };
 
-  let propId$ = props.get('todoid').startWith(0).shareReplay(1);
-  let propContent$ = props.get('content').startWith('');
-  let propCompleted$ = props.get('completed').startWith(false);
+  const defaultProps = {todoid: 0, content: '', completed: false};
+  let props$ = drivers.props.getAll().startWith(defaultProps).shareReplay(1);
 
   var editing$ = Rx.Observable.merge(
     intent.startEdit$.map(() => true),
@@ -25,38 +24,40 @@ Cycle.registerCustomElement('todo-item', function (interactions, props) {
   ).startWith(false);
 
   let vtree$ = Rx.Observable
-    .combineLatest(propId$, propContent$, propCompleted$, editing$,
-      function(id, content, completed, editing) {
-        let classes = (completed ? '.completed' : '') +
-          (editing ? '.editing' : '');
-        return h('li.todoRoot' + classes, [
-          h('div.view', [
-            h('input.toggle', {
-              type: 'checkbox',
-              checked: propHook(elem => elem.checked = completed)
-            }),
-            h('label', content),
-            h('button.destroy')
-          ]),
-          h('input.edit', {
-            type: 'text',
-            value: propHook(element => {
-              element.value = content;
-              if (editing) {
-                element.focus();
-                element.selectionStart = element.value.length;
-              }
-            })
+    .combineLatest(props$, editing$, function({content, completed}, editing) {
+      let classes = (completed ? '.completed' : '') +
+        (editing ? '.editing' : '');
+      return h('li.todoRoot' + classes, [
+        h('div.view', [
+          h('input.toggle', {
+            type: 'checkbox',
+            checked: propHook(elem => elem.checked = completed)
+          }),
+          h('label', content),
+          h('button.destroy')
+        ]),
+        h('input.edit', {
+          type: 'text',
+          value: propHook(element => {
+            element.value = content;
+            if (editing) {
+              element.focus();
+              element.selectionStart = element.value.length;
+            }
           })
-        ]);
-      }
-    );
+        })
+      ]);
+    });
 
   return {
-    vtree$,
-    destroy$: intent.destroy$.withLatestFrom(propId$, (ev, id) => id),
-    toggle$: intent.toggle$.withLatestFrom(propId$, (ev, id) => id),
-    newContent$: intent.stopEdit$
-      .withLatestFrom(propId$, (content, id) => ({content, id}))
+    DOM: vtree$,
+    events: {
+      destroy: intent.destroy$.withLatestFrom(props$, (ev, {todoid}) => todoid),
+      toggle: intent.toggle$.withLatestFrom(props$, (ev, {todoid}) => todoid),
+      newContent: intent.stopEdit$
+        .withLatestFrom(props$, (content, {todoid}) => ({content, id: todoid}))
+    }
   };
-});
+}
+
+module.exports = todoItemComponent;
