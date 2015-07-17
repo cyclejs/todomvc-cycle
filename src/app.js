@@ -8,7 +8,7 @@ import view from './views/todos';
 import localStorageSink from './sinks/local-storage.js';
 
 function main(drivers) {
-  let todos$ = model(intent(drivers.DOM), source);
+  let todos$ = model(intent(drivers.DOM, drivers.hashchange), source);
   todos$.subscribe(localStorageSink);
   return view(todos$);
 }
@@ -16,5 +16,6 @@ function main(drivers) {
 Cycle.run(main, {
   DOM: CycleWeb.makeDOMDriver('#todoapp', {
     'todo-item': todoItemComponent
-  })
+  }),
+  hashchange: () => Cycle.Rx.Observable.fromEvent(window, 'hashchange')
 });

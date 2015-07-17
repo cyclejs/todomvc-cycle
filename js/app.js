@@ -15669,38 +15669,38 @@ var _cycleCore = require('@cycle/core');
 
 var _utils = require('../utils');
 
-function intent(domDriver) {
+function intent(DOM, hashchange) {
   return {
-    changeRoute$: _cycleCore.Rx.Observable.fromEvent(window, 'hashchange').map(function (ev) {
+    changeRoute$: hashchange.map(function (ev) {
       return ev.newURL.match(/\#[^\#]*$/)[0].replace('#', '');
     }).startWith(window.location.hash.replace('#', '')),
 
-    clearInput$: domDriver.get('#new-todo', 'keyup').filter(function (ev) {
+    clearInput$: DOM.get('#new-todo', 'keyup').filter(function (ev) {
       return ev.keyCode === _utils.ESC_KEY;
     }),
 
-    insertTodo$: domDriver.get('#new-todo', 'keyup').filter(function (ev) {
+    insertTodo$: DOM.get('#new-todo', 'keyup').filter(function (ev) {
       var trimmedVal = String(ev.target.value).trim();
       return ev.keyCode === _utils.ENTER_KEY && trimmedVal;
     }).map(function (ev) {
       return String(ev.target.value).trim();
     }),
 
-    editTodo$: domDriver.get('.todo-item', 'newContent').map(function (ev) {
+    editTodo$: DOM.get('.todo-item', 'newContent').map(function (ev) {
       return ev.detail;
     }),
 
-    toggleTodo$: domDriver.get('.todo-item', 'toggle').map(function (ev) {
+    toggleTodo$: DOM.get('.todo-item', 'toggle').map(function (ev) {
       return ev.detail;
     }),
 
-    toggleAll$: domDriver.get('#toggle-all', 'click'),
+    toggleAll$: DOM.get('#toggle-all', 'click'),
 
-    deleteTodo$: domDriver.get('.todo-item', 'destroy').map(function (ev) {
+    deleteTodo$: DOM.get('.todo-item', 'destroy').map(function (ev) {
       return ev.detail;
     }),
 
-    deleteCompleteds$: domDriver.get('#clear-completed', 'click')
+    deleteCompleteds$: DOM.get('#clear-completed', 'click')
   };
 }
 
@@ -16056,7 +16056,7 @@ var _sinksLocalStorageJs = require('./sinks/local-storage.js');
 var _sinksLocalStorageJs2 = _interopRequireDefault(_sinksLocalStorageJs);
 
 function main(drivers) {
-  var todos$ = _modelsTodos2['default'](_intentsTodos2['default'](drivers.DOM), _sourcesTodos2['default']);
+  var todos$ = _modelsTodos2['default'](_intentsTodos2['default'](drivers.DOM, drivers.hashchange), _sourcesTodos2['default']);
   todos$.subscribe(_sinksLocalStorageJs2['default']);
   return _viewsTodos2['default'](todos$);
 }
@@ -16064,7 +16064,10 @@ function main(drivers) {
 _cycleCore2['default'].run(main, {
   DOM: _cycleWeb2['default'].makeDOMDriver('#todoapp', {
     'todo-item': _componentsTodoItem2['default']
-  })
+  }),
+  hashchange: function hashchange() {
+    return _cycleCore2['default'].Rx.Observable.fromEvent(window, 'hashchange');
+  }
 });
 
 },{"./components/todo-item":115,"./intents/todos":116,"./models/todos":117,"./sinks/local-storage.js":118,"./sources/todos":119,"./views/todos":121,"@cycle/core":1,"@cycle/web":5}]},{},[122]);
