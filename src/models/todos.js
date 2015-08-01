@@ -34,7 +34,6 @@ function searchTodoIndex(todosList, todoid) {
 
 function makeModification$(intent) {
   let clearInputMod$ = intent.clearInput$.map(() => (todosData) => {
-    todosData.input = '';
     return todosData;
   });
 
@@ -47,7 +46,6 @@ function makeModification$(intent) {
       title: todoTitle,
       completed: false
     });
-    todosData.input = '';
     return todosData;
   });
 
