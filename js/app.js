@@ -15761,7 +15761,6 @@ function searchTodoIndex(todosList, todoid) {
 function makeModification$(intent) {
   var clearInputMod$ = intent.clearInput$.map(function () {
     return function (todosData) {
-      todosData.input = '';
       return todosData;
     };
   });
@@ -15774,7 +15773,6 @@ function makeModification$(intent) {
         title: todoTitle,
         completed: false
       });
-      todosData.input = '';
       return todosData;
     };
   });
@@ -15889,7 +15887,6 @@ function merge() {
 
 var defaultTodosData = {
   list: [],
-  input: '',
   filter: '',
   filterFn: function filterFn() {
     return true // allow anything
@@ -15961,12 +15958,8 @@ var _utils = require('../utils');
 function vrenderHeader(todosData) {
   return _cycleWeb.h('header#header', [_cycleWeb.h('h1', 'todos'), _cycleWeb.h('input#new-todo', {
     type: 'text',
-    value: _utils.propHook(function (elem) {
-      elem.value = todosData.input;
-    }),
-    attributes: {
-      placeholder: 'What needs to be done?'
-    },
+    value: '',
+    attributes: { placeholder: 'What needs to be done?' },
     autofocus: true,
     name: 'newTodo'
   })]);

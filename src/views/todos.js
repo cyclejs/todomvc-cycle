@@ -8,9 +8,7 @@ function vrenderHeader(todosData) {
     h('input#new-todo', {
       type: 'text',
       value: '',
-      attributes: {
-        placeholder: 'What needs to be done?'
-      },
+      attributes: {placeholder: 'What needs to be done?'},
       autofocus: true,
       name: 'newTodo'
     })
