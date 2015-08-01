@@ -15,7 +15,6 @@ function merge() {
 
 let defaultTodosData = {
   list: [],
-  input: '',
   filter: '',
   filterFn: () => true // allow anything
 };
