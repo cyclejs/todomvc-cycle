@@ -7,10 +7,8 @@ function vrenderHeader(todosData) {
     h('h1', 'todos'),
     h('input#new-todo', {
       type: 'text',
-      value: propHook(elem => { elem.value = todosData.input; }),
-      attributes: {
-        placeholder: 'What needs to be done?'
-      },
+      value: '',
+      attributes: {placeholder: 'What needs to be done?'},
       autofocus: true,
       name: 'newTodo'
     })
