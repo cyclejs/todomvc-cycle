@@ -1,5 +1,5 @@
 import Cycle from '@cycle/core';
-import CycleWeb from '@cycle/web';
+import {makeDOMDriver} from '@cycle/dom';
 import todoItemComponent from './components/todo-item';
 import source from './sources/todos';
 import intent from './intents/todos';
@@ -14,7 +14,7 @@ function main(drivers) {
 }
 
 Cycle.run(main, {
-  DOM: CycleWeb.makeDOMDriver('#todoapp', {
+  DOM: makeDOMDriver('#todoapp', {
     'todo-item': todoItemComponent
   }),
   hashchange: () => Cycle.Rx.Observable.fromEvent(window, 'hashchange')
