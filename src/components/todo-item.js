@@ -1,5 +1,5 @@
 import {Rx} from '@cycle/core';
-import {h} from '@cycle/web';
+import {h} from '@cycle/dom';
 import {propHook, ENTER_KEY, ESC_KEY} from '../utils';
 
 function todoItemComponent(drivers) {
