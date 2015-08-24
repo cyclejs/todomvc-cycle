@@ -1,21 +1,14 @@
-import Cycle from '@cycle/core';
-import CycleWeb from '@cycle/web';
-import todoItemComponent from './components/todo-item';
-import source from './sources/todos';
-import intent from './intents/todos';
-import model from './models/todos';
-import view from './views/todos';
-import localStorageSink from './sinks/local-storage.js';
+import {run, Rx} from '@cycle/core';
+import CycleDOM from '@cycle/dom';
+import todos from './components/todos/index';
+import CustomDrivers from './drivers';
 
-function main(drivers) {
-  let todos$ = model(intent(drivers.DOM, drivers.hashchange), source);
-  todos$.subscribe(localStorageSink);
-  return view(todos$);
-}
+const main = todos;
 
-Cycle.run(main, {
-  DOM: CycleWeb.makeDOMDriver('#todoapp', {
-    'todo-item': todoItemComponent
-  }),
-  hashchange: () => Cycle.Rx.Observable.fromEvent(window, 'hashchange')
+run(main, {
+  DOM: CycleDOM.makeDOMDriver('.todoapp'),
+  localStorageSource: CustomDrivers.makeLocalStorageSourceDriver('todos-cycle'),
+  localStorageSink: CustomDrivers.makeLocalStorageSinkDriver('todos-cycle'),
+  initialHash: () => Rx.Observable.just(window.location.hash),
+  hashchange: () => Rx.Observable.fromEvent(window, 'hashchange')
 });

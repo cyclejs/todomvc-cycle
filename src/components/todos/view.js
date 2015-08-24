@@ -1,11 +1,10 @@
 import {Rx} from '@cycle/core';
-import {h} from '@cycle/web';
-import {propHook} from '../utils';
+import {h} from '@cycle/dom';
 
-function vrenderHeader(todosData) {
-  return h('header#header', [
+function renderHeader() {
+  return h('header.header', [
     h('h1', 'todos'),
-    h('input#new-todo', {
+    h('input.new-todo', {
       type: 'text',
       value: '',
       attributes: {placeholder: 'What needs to be done?'},
@@ -15,42 +14,35 @@ function vrenderHeader(todosData) {
   ]);
 }
 
-function vrenderMainSection(todosData) {
+function renderMainSection(todosData) {
   let allCompleted = todosData.list.reduce((x, y) => x && y.completed, true);
-  return h('section#main', {
+  return h('section.main', {
     style: {'display': todosData.list.length ? '' : 'none'}
   }, [
-    h('input#toggle-all', {
+    h('input.toggle-all', {
       type: 'checkbox',
       checked: allCompleted
     }),
-    h('ul#todo-list', todosData.list
+    h('ul.todo-list', todosData.list
       .filter(todosData.filterFn)
-      .map(todoData =>
-        h('todo-item.todo-item', {
-          key: todoData.id,
-          todoid: todoData.id,
-          content: todoData.title,
-          completed: todoData.completed
-        })
-      )
+      .map(data => data.todoItem.DOM)
     )
   ])
 }
 
-function vrenderFooter(todosData) {
+function renderFooter(todosData) {
   let amountCompleted = todosData.list
     .filter(todoData => todoData.completed)
     .length;
   let amountActive = todosData.list.length - amountCompleted;
-  return h('footer#footer', {
+  return h('footer.footer', {
     style: {'display': todosData.list.length ? '' : 'none'}
   }, [
-    h('span#todo-count', [
+    h('span.todo-count', [
       h('strong', String(amountActive)),
       ' item' + (amountActive !== 1 ? 's' : '') + ' left'
     ]),
-    h('ul#filters', [
+    h('ul.filters', [
       h('li', [
         h('a' + (todosData.filter === '' ? '.selected' : ''), {
           attributes: {'href': '#/'}
@@ -68,20 +60,18 @@ function vrenderFooter(todosData) {
       ])
     ]),
     (amountCompleted > 0 ?
-      h('button#clear-completed', 'Clear completed (' + amountCompleted + ')')
+      h('button.clear-completed', 'Clear completed (' + amountCompleted + ')')
       : null
     )
   ])
 }
 
 export default function view(todos$) {
-  return {
-    DOM: todos$.map(todos =>
-      h('div', [
-        vrenderHeader(todos),
-        vrenderMainSection(todos),
-        vrenderFooter(todos)
-      ])
-    )
-  };
+  return todos$.map(todos =>
+    h('div', [
+      renderHeader(),
+      renderMainSection(todos),
+      renderFooter(todos)
+    ])
+  );
 };
