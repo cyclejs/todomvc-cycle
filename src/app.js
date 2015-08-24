@@ -6,7 +6,7 @@ import CustomDrivers from './drivers';
 const main = todos;
 
 run(main, {
-  DOM: CycleDOM.makeDOMDriver('#todoapp'),
+  DOM: CycleDOM.makeDOMDriver('.todoapp'),
   localStorageSource: CustomDrivers.makeLocalStorageSourceDriver('todos-cycle'),
   localStorageSink: CustomDrivers.makeLocalStorageSinkDriver('todos-cycle'),
   initialHash: () => Rx.Observable.just(window.location.hash),

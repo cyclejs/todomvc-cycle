@@ -30570,7 +30570,7 @@ var _drivers2 = _interopRequireDefault(_drivers);
 var main = _componentsTodosIndex2['default'];
 
 (0, _cycleCore.run)(main, {
-  DOM: _cycleDom2['default'].makeDOMDriver('#todoapp'),
+  DOM: _cycleDom2['default'].makeDOMDriver('.todoapp'),
   localStorageSource: _drivers2['default'].makeLocalStorageSourceDriver('todos-cycle'),
   localStorageSink: _drivers2['default'].makeLocalStorageSinkDriver('todos-cycle'),
   initialHash: function initialHash() {
@@ -30807,11 +30807,11 @@ function intent(DOM, hashchange, initialHash, itemActions) {
       return ev.newURL.match(/\#[^\#]*$/)[0].replace('#', '');
     })),
 
-    clearInput$: DOM.get('#new-todo', 'keyup').filter(function (ev) {
+    clearInput$: DOM.get('.new-todo', 'keyup').filter(function (ev) {
       return ev.keyCode === _utils.ESC_KEY;
     }),
 
-    insertTodo$: DOM.get('#new-todo', 'keyup').filter(function (ev) {
+    insertTodo$: DOM.get('.new-todo', 'keyup').filter(function (ev) {
       var trimmedVal = String(ev.target.value).trim();
       return ev.keyCode === _utils.ENTER_KEY && trimmedVal;
     }).map(function (ev) {
@@ -30834,9 +30834,9 @@ function intent(DOM, hashchange, initialHash, itemActions) {
       return { id: getTodoItemId(name), title: title };
     }),
 
-    toggleAll$: DOM.get('#toggle-all', 'click'),
+    toggleAll$: DOM.get('.toggle-all', 'click'),
 
-    deleteCompleteds$: DOM.get('#clear-completed', 'click')
+    deleteCompleteds$: DOM.get('.clear-completed', 'click')
   };
 }
 
@@ -31055,7 +31055,7 @@ var _cycleCore = require('@cycle/core');
 var _cycleDom = require('@cycle/dom');
 
 function renderHeader() {
-  return (0, _cycleDom.h)('header#header', [(0, _cycleDom.h)('h1', 'todos'), (0, _cycleDom.h)('input#new-todo', {
+  return (0, _cycleDom.h)('header.header', [(0, _cycleDom.h)('h1', 'todos'), (0, _cycleDom.h)('input.new-todo', {
     type: 'text',
     value: '',
     attributes: { placeholder: 'What needs to be done?' },
@@ -31068,12 +31068,12 @@ function renderMainSection(todosData) {
   var allCompleted = todosData.list.reduce(function (x, y) {
     return x && y.completed;
   }, true);
-  return (0, _cycleDom.h)('section#main', {
+  return (0, _cycleDom.h)('section.main', {
     style: { 'display': todosData.list.length ? '' : 'none' }
-  }, [(0, _cycleDom.h)('input#toggle-all', {
+  }, [(0, _cycleDom.h)('input.toggle-all', {
     type: 'checkbox',
     checked: allCompleted
-  }), (0, _cycleDom.h)('ul#todo-list', todosData.list.filter(todosData.filterFn).map(function (data) {
+  }), (0, _cycleDom.h)('ul.todo-list', todosData.list.filter(todosData.filterFn).map(function (data) {
     return data.todoItem.DOM;
   }))]);
 }
@@ -31083,15 +31083,15 @@ function renderFooter(todosData) {
     return todoData.completed;
   }).length;
   var amountActive = todosData.list.length - amountCompleted;
-  return (0, _cycleDom.h)('footer#footer', {
+  return (0, _cycleDom.h)('footer.footer', {
     style: { 'display': todosData.list.length ? '' : 'none' }
-  }, [(0, _cycleDom.h)('span#todo-count', [(0, _cycleDom.h)('strong', String(amountActive)), ' item' + (amountActive !== 1 ? 's' : '') + ' left']), (0, _cycleDom.h)('ul#filters', [(0, _cycleDom.h)('li', [(0, _cycleDom.h)('a' + (todosData.filter === '' ? '.selected' : ''), {
+  }, [(0, _cycleDom.h)('span.todo-count', [(0, _cycleDom.h)('strong', String(amountActive)), ' item' + (amountActive !== 1 ? 's' : '') + ' left']), (0, _cycleDom.h)('ul.filters', [(0, _cycleDom.h)('li', [(0, _cycleDom.h)('a' + (todosData.filter === '' ? '.selected' : ''), {
     attributes: { 'href': '#/' }
   }, 'All')]), (0, _cycleDom.h)('li', [(0, _cycleDom.h)('a' + (todosData.filter === 'active' ? '.selected' : ''), {
     attributes: { 'href': '#/active' }
   }, 'Active')]), (0, _cycleDom.h)('li', [(0, _cycleDom.h)('a' + (todosData.filter === 'completed' ? '.selected' : ''), {
     attributes: { 'href': '#/completed' }
-  }, 'Completed')])]), amountCompleted > 0 ? (0, _cycleDom.h)('button#clear-completed', 'Clear completed (' + amountCompleted + ')') : null]);
+  }, 'Completed')])]), amountCompleted > 0 ? (0, _cycleDom.h)('button.clear-completed', 'Clear completed (' + amountCompleted + ')') : null]);
 }
 
 function view(todos$) {
