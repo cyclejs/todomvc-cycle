@@ -2,61 +2,75 @@ import {Rx} from '@cycle/core';
 import {h} from '@cycle/web';
 import {propHook, ENTER_KEY, ESC_KEY} from '../utils';
 
-function todoItemComponent(drivers) {
-  let intent = {
-    destroy$: drivers.DOM.get('.destroy', 'click'),
-    toggle$: drivers.DOM.get('.toggle', 'change'),
-    startEdit$: drivers.DOM.get('label', 'dblclick'),
-    stopEdit$: drivers.DOM.get('.edit', 'keyup')
-      .filter(ev => ev.keyCode === ESC_KEY || ev.keyCode === ENTER_KEY)
-      .merge(drivers.DOM.get('.edit', 'blur'))
-      .map(ev => ev.currentTarget.value)
-      .share()
-  };
-
-  const defaultProps = {todoid: 0, content: '', completed: false};
-  let props$ = drivers.props.getAll().startWith(defaultProps).shareReplay(1);
-
-  var editing$ = Rx.Observable.merge(
-    intent.startEdit$.map(() => true),
-    intent.stopEdit$.map(() => false)
-  ).startWith(false);
-
-  let vtree$ = Rx.Observable
-    .combineLatest(props$, editing$, function({content, completed}, editing) {
-      let classes = (completed ? '.completed' : '') +
-        (editing ? '.editing' : '');
-      return h('li.todoRoot' + classes, [
-        h('div.view', [
-          h('input.toggle', {
-            type: 'checkbox',
-            checked: propHook(elem => elem.checked = completed)
-          }),
-          h('label', content),
-          h('button.destroy')
-        ]),
-        h('input.edit', {
-          type: 'text',
-          value: propHook(element => {
-            element.value = content;
-            if (editing) {
-              element.focus();
-              element.selectionStart = element.value.length;
-            }
-          })
-        })
-      ]);
-    });
-
+function intent(DOM, name = '') {
   return {
-    DOM: vtree$,
-    events: {
-      destroy: intent.destroy$.withLatestFrom(props$, (ev, {todoid}) => todoid),
-      toggle: intent.toggle$.withLatestFrom(props$, (ev, {todoid}) => todoid),
-      newContent: intent.stopEdit$
-        .withLatestFrom(props$, (content, {todoid}) => ({content, id: todoid}))
-    }
+    delete$: DOM.get(`${name} .destroy`, 'click').map(() => ({name})),
+    toggle$: DOM.get(`${name} .toggle`, 'change').map(() => ({name})),
+    startEdit$: DOM.get(`${name} label`, 'dblclick').map(() => ({name})),
+    cancelEdit$: DOM.get(`${name} .edit`, 'keyup')
+      .filter(ev => ev.keyCode === ESC_KEY)
+      .map(() => ({name})),
+    stopEdit$: DOM.get(`${name} .edit`, 'keyup')
+      .filter(ev => ev.keyCode === ENTER_KEY)
+      .merge(DOM.get(`${name} .edit`, 'blur'))
+      .map(ev => ({title: ev.currentTarget.value, name}))
+      .share()
   };
 }
 
-module.exports = todoItemComponent;
+function model(props$, actions) {
+  let sanitizedProps$ = props$.startWith({title: '', completed: false});
+  let editing$ = Rx.Observable
+    .merge(
+      actions.startEdit$.map(() => true),
+      actions.stopEdit$.map(() => false),
+      actions.cancelEdit$.map(() => false)
+    )
+    .startWith(false);
+  return Rx.Observable.combineLatest(
+    sanitizedProps$, editing$,
+    ({title, completed}, editing) =>
+    ({title, completed, editing})
+  );
+}
+
+function view(state$, name = '') {
+  return state$.map(({title, completed, editing}) => {
+    const completedClass = (completed ? '.completed' : '');
+    const editingClass = (editing ? '.editing' : '');
+    return h(`li.todoRoot${name}${completedClass}${editingClass}`, [
+      h('div.view', [
+        h('input.toggle', {
+          type: 'checkbox',
+          checked: propHook(elem => elem.checked = completed)
+        }),
+        h('label', title),
+        h('button.destroy')
+      ]),
+      h('input.edit', {
+        type: 'text',
+        value: propHook(element => {
+          element.value = title;
+          if (editing) {
+            element.focus();
+            element.selectionStart = element.value.length;
+          }
+        })
+      })
+    ]);
+  });
+}
+
+function todoItem({DOM, props$}, name = '') {
+  let actions = intent(DOM, name);
+  let state$ = model(props$, actions);
+  let vtree$ = view(state$, name);
+  return {
+    DOM: vtree$,
+    toggle$: actions.toggle$,
+    delete$: actions.delete$,
+    edit$: actions.stopEdit$,
+  };
+}
+
+export default todoItem;

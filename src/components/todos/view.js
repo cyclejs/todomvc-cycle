@@ -1,8 +1,7 @@
 import {Rx} from '@cycle/core';
-import {h} from '@cycle/web';
-import {propHook} from '../utils';
+import {h} from '@cycle/dom';
 
-function vrenderHeader(todosData) {
+function renderHeader() {
   return h('header#header', [
     h('h1', 'todos'),
     h('input#new-todo', {
@@ -15,7 +14,7 @@ function vrenderHeader(todosData) {
   ]);
 }
 
-function vrenderMainSection(todosData) {
+function renderMainSection(todosData) {
   let allCompleted = todosData.list.reduce((x, y) => x && y.completed, true);
   return h('section#main', {
     style: {'display': todosData.list.length ? '' : 'none'}
@@ -26,19 +25,12 @@ function vrenderMainSection(todosData) {
     }),
     h('ul#todo-list', todosData.list
       .filter(todosData.filterFn)
-      .map(todoData =>
-        h('todo-item.todo-item', {
-          key: todoData.id,
-          todoid: todoData.id,
-          content: todoData.title,
-          completed: todoData.completed
-        })
-      )
+      .map(data => data.todoItem.DOM)
     )
   ])
 }
 
-function vrenderFooter(todosData) {
+function renderFooter(todosData) {
   let amountCompleted = todosData.list
     .filter(todoData => todoData.completed)
     .length;
@@ -75,13 +67,11 @@ function vrenderFooter(todosData) {
 }
 
 export default function view(todos$) {
-  return {
-    DOM: todos$.map(todos =>
-      h('div', [
-        vrenderHeader(todos),
-        vrenderMainSection(todos),
-        vrenderFooter(todos)
-      ])
-    )
-  };
+  return todos$.map(todos =>
+    h('div', [
+      renderHeader(),
+      renderMainSection(todos),
+      renderFooter(todos)
+    ])
+  );
 };
