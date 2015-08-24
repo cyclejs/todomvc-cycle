@@ -1,10 +1,10 @@
 TodoMVC in Cycle.js
 ===================
 
-TodoMVC example implemented in [Cycle.js](https://github.com/staltz/cycle).
+TodoMVC example implemented in [Cycle.js](http://cycle.js.org).
 
-[Open the app](http://staltz.com/todomvc-cycle)
+[Open the app]( http://cycle.js.org/todomvc-cycle/ )
 
 - - -
 
-To see a version of this codebase using Immutable.js, [click here](https://github.com/staltz/todomvc-cycle/pull/9/files).
+To see a version of this codebase using Immutable.js, [click here](https://github.com/cyclejs/todomvc-cycle/pull/9/files).
