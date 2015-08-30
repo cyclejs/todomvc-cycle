@@ -4,15 +4,23 @@ import {propHook, ENTER_KEY, ESC_KEY} from '../utils';
 
 function intent(DOM, name = '') {
   return {
-    delete$: DOM.get(`${name} .destroy`, 'click').map(() => ({name})),
-    toggle$: DOM.get(`${name} .toggle`, 'change').map(() => ({name})),
-    startEdit$: DOM.get(`${name} label`, 'dblclick').map(() => ({name})),
-    cancelEdit$: DOM.get(`${name} .edit`, 'keyup')
+    delete$: DOM.select(`${name} .destroy`)
+      .events('click')
+      .map(() => ({name})),
+    toggle$: DOM.select(`${name} .toggle`)
+      .events('change')
+      .map(() => ({name})),
+    startEdit$: DOM.select(`${name} label`)
+      .events('dblclick')
+      .map(() => ({name})),
+    cancelEdit$: DOM.select(`${name} .edit`)
+      .events('keyup')
       .filter(ev => ev.keyCode === ESC_KEY)
       .map(() => ({name})),
-    stopEdit$: DOM.get(`${name} .edit`, 'keyup')
+    stopEdit$: DOM.select(`${name} .edit`)
+      .events('keyup')
       .filter(ev => ev.keyCode === ENTER_KEY)
-      .merge(DOM.get(`${name} .edit`, 'blur'))
+      .merge(DOM.select(`${name} .edit`).events('blur'))
       .map(ev => ({title: ev.currentTarget.value, name}))
       .share()
   };

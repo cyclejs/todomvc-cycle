@@ -10,10 +10,10 @@ export default function intent(DOM, hashchange, initialHash, itemActions) {
       hashchange.map(ev => ev.newURL.match(/\#[^\#]*$/)[0].replace('#', ''))
     ),
 
-    clearInput$: DOM.get('.new-todo', 'keyup')
+    clearInput$: DOM.select('.new-todo').events('keyup')
       .filter(ev => ev.keyCode === ESC_KEY),
 
-    insertTodo$: DOM.get('.new-todo', 'keyup')
+    insertTodo$: DOM.select('.new-todo').events('keyup')
       .filter(ev => {
         let trimmedVal = String(ev.target.value).trim();
         return ev.keyCode === ENTER_KEY && trimmedVal;
@@ -29,8 +29,8 @@ export default function intent(DOM, hashchange, initialHash, itemActions) {
     editTodo$: itemActions.edit$
       .map(({name, title}) => ({id: getTodoItemId(name), title})),
 
-    toggleAll$: DOM.get('.toggle-all', 'click'),
+    toggleAll$: DOM.select('.toggle-all').events('click'),
 
-    deleteCompleteds$: DOM.get('.clear-completed', 'click')
+    deleteCompleteds$: DOM.select('.clear-completed').events('click')
   };
 };

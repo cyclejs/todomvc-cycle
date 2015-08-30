@@ -8,11 +8,14 @@
   },
   "license": "MIT",
   "private": true,
-  "devDependencies": {
+  "dependencies": {
     "@cycle/core": "3.1.x",
-    "@cycle/dom": "5.0.x",
+    "@cycle/dom": "5.1.x",
     "todomvc-app-css": "2.0.x",
     "todomvc-common": "^1.0.1",
+    "lodash.mapvalues": "^3.0.1"
+  },
+  "devDependencies": {
     "babel": "^5.1.13",
     "babelify": "6.2.x",
     "uglify-js": "2.4.24",
@@ -22,8 +25,5 @@
     "build-debug": "mkdir -p js && browserify src/app.js -t babelify --outfile js/app.js",
     "uglify": "uglifyjs js/app.js -o js/app.min.js",
     "build": "npm run build-debug && npm run uglify"
-  },
-  "dependencies": {
-    "lodash.mapvalues": "^3.0.1"
   }
 }
