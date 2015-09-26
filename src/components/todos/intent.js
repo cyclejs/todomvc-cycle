@@ -10,10 +10,10 @@ export default function intent(DOM, hashchange, initialHash, itemActions) {
       hashchange.map(ev => ev.newURL.match(/\#[^\#]*$/)[0].replace('#', ''))
     ),
 
-    clearInput$: DOM.select('.new-todo').events('keyup')
+    clearInput$: DOM.select('.new-todo').events('keydown')
       .filter(ev => ev.keyCode === ESC_KEY),
 
-    insertTodo$: DOM.select('.new-todo').events('keyup')
+    insertTodo$: DOM.select('.new-todo').events('keydown')
       .filter(ev => {
         let trimmedVal = String(ev.target.value).trim();
         return ev.keyCode === ENTER_KEY && trimmedVal;
