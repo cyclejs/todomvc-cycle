@@ -8,12 +8,6 @@ function getFilterFn(route) {
   }
 }
 
-function determineFilter(todosData, route) {
-  todosData.filter = route.replace('/', '').trim();
-  todosData.filterFn = getFilterFn(route);
-  return todosData;
-}
-
 function searchTodoIndex(todosList, todoid) {
   let top = todosList.length;
   let bottom = 0;
@@ -84,20 +78,27 @@ function makeModification$(actions) {
     return todosData
   });
 
+  let changeRouteMod$ = actions.changeRoute$.startWith('/').map(route => {
+    let filterFn = getFilterFn(route)
+    return (todosData) => {
+      todosData.filter = route.replace('/', '').trim();
+      todosData.filterFn = filterFn;
+      return todosData;
+    }
+  });
+
   return Rx.Observable.merge(
     insertTodoMod$, deleteTodoMod$, toggleTodoMod$, toggleAllMod$,
-    clearInputMod$, deleteCompletedsMod$, editTodoMod$
+    clearInputMod$, deleteCompletedsMod$, editTodoMod$, changeRouteMod$
   );
 }
 
 function model(actions, sourceTodosData$) {
   let modification$ = makeModification$(actions);
-  let route$ = Rx.Observable.just('/').merge(actions.changeRoute$);
 
-  return modification$
-    .merge(sourceTodosData$)
+  return sourceTodosData$
+    .merge(modification$)
     .scan((todosData, modFn) => modFn(todosData))
-    .combineLatest(route$, determineFilter)
     .shareReplay(1);
 }
 
