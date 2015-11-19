@@ -1,7 +1,7 @@
-import {Rx} from '@cycle/core';
+import {Observable} from 'rx';
 
 function makeLocalStorageSourceDriver(keyName) {
-  return () => Rx.Observable.just(localStorage.getItem(keyName));
+  return () => Observable.just(localStorage.getItem(keyName));
 }
 
 function makeLocalStorageSinkDriver(keyName) {

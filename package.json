@@ -8,18 +8,23 @@
   },
   "license": "MIT",
   "private": true,
+  "contributors": [{
+    "name": "Frederik Krautwald"
+  }],
   "dependencies": {
-    "@cycle/core": "3.1.x",
-    "@cycle/dom": "5.1.x",
-    "todomvc-app-css": "2.0.x",
-    "todomvc-common": "^1.0.1",
-    "lodash.mapvalues": "^3.0.1"
+    "@cycle/core": "6.0.0-rc2",
+    "@cycle/dom": "8.0.0-rc2",
+    "@cycle/isolate": "1.0.x",
+    "rx": "4.0.7",
+    "todomvc-app-css": "2.0.3",
+    "todomvc-common": "1.0.1",
+    "lodash.mapvalues": "3.0.1"
   },
   "devDependencies": {
-    "babel": "^5.1.13",
-    "babelify": "6.2.x",
-    "uglify-js": "2.4.24",
-    "browserify": "11.0.1"
+    "babel": "5.8.29",
+    "babelify": "6.2.0",
+    "uglify-js": "2.6.1",
+    "browserify": "12.0.1"
   },
   "scripts": {
     "build-debug": "mkdir -p js && browserify src/app.js -t babelify --outfile js/app.js",

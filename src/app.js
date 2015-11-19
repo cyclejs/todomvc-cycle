@@ -1,14 +1,15 @@
-import {run, Rx} from '@cycle/core';
+import {run} from '@cycle/core';
 import CycleDOM from '@cycle/dom';
-import todos from './components/todos/index';
+import {Observable} from 'rx'
+import Todos from './components/Todos/index';
 import CustomDrivers from './drivers';
 
-const main = todos;
+const main = Todos;
 
 run(main, {
   DOM: CycleDOM.makeDOMDriver('.todoapp'),
   localStorageSource: CustomDrivers.makeLocalStorageSourceDriver('todos-cycle'),
   localStorageSink: CustomDrivers.makeLocalStorageSinkDriver('todos-cycle'),
-  initialHash: () => Rx.Observable.just(window.location.hash),
-  hashchange: () => Rx.Observable.fromEvent(window, 'hashchange')
+  initialHash: () => Observable.just(window.location.hash),
+  hashchange: () => Observable.fromEvent(window, 'hashchange')
 });

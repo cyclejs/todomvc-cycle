@@ -1,22 +1,29 @@
-import {Rx} from '@cycle/core';
+import {Observable, Subject} from 'rx';
+import isolate from '@cycle/isolate'
 import intent from './intent';
 import model from './model';
 import view from './view';
 import deserialize from './local-storage-source';
 import serialize from './local-storage-sink';
-import todoItem from '../todo-item';
+import TodoItem from '../TodoItem';
 import mapValues from 'lodash.mapvalues';
 
 function amendStateWithChildren(DOM) {
   return function (todosData) {
     return {
       list: todosData.list.map(data => {
-        const props$ = Rx.Observable.just(data);
+        const props$ = Observable.just(data);
+        const todoItem = isolate(TodoItem)({DOM, props$});
         return {
           id: data.id,
           title: data.title,
           completed: data.completed,
-          todoItem: todoItem({DOM, props$}, `.item${data.id}`)
+          todoItem: {
+            DOM: todoItem.DOM,
+            toggle$: todoItem.toggle$.map(() => data.id),
+            delete$: todoItem.delete$.map(() => data.id),
+            edit$: todoItem.edit$.map(() => data.id),
+          }
         };
       }),
       filter: todosData.filter,
@@ -30,7 +37,7 @@ function makeItemActions(typeItemActions, amendedState$) {
     amendedState$
       .filter(todosData => todosData.list.length)
       .flatMapLatest(todosData =>
-        Rx.Observable.merge(todosData.list.map(i => i.todoItem[actionKey]))
+        Observable.merge(todosData.list.map(i => i.todoItem[actionKey]))
       )
   );
 }
@@ -41,10 +48,10 @@ function replicateAll(objectStructure, realStreams, proxyStreams) {
   });
 }
 
-function todos({DOM, hashchange, initialHash, localStorageSource}) {
+function Todos({DOM, hashchange, initialHash, localStorageSource}) {
   let sourceTodosData$ = deserialize(localStorageSource);
   let typeItemActions = {toggle$: null, edit$: null, delete$: null};
-  let proxyItemActions = mapValues(typeItemActions, () => new Rx.Subject());
+  let proxyItemActions = mapValues(typeItemActions, () => new Subject());
   let actions = intent(DOM, hashchange, initialHash, proxyItemActions);
   let state$ = model(actions, sourceTodosData$).shareReplay(1);
   let amendedState$ = state$.map(amendStateWithChildren(DOM)).shareReplay(1);
@@ -56,4 +63,4 @@ function todos({DOM, hashchange, initialHash, localStorageSource}) {
   };
 }
 
-export default todos;
+export default Todos;

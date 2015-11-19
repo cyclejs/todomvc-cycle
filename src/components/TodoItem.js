@@ -1,56 +1,56 @@
-import {Rx} from '@cycle/core';
-import {h} from '@cycle/dom';
+import {Observable} from 'rx';
+import {button, div, input, label, li} from '@cycle/dom';
 import {propHook, ENTER_KEY, ESC_KEY} from '../utils';
 
-function intent(DOM, name = '') {
+function intent(DOM) {
   return {
-    delete$: DOM.select(`${name} .destroy`).events('click')
-      .map(() => ({name})),
-    toggle$: DOM.select(`${name} .toggle`).events('change')
-      .map(() => ({name})),
-    startEdit$: DOM.select(`${name} label`).events('dblclick')
-      .map(() => ({name})),
-    cancelEdit$: DOM.select(`${name} .edit`).events('keyup')
+    delete$: DOM.select(`.destroy`).events('click')
+      .map(() => true),
+    toggle$: DOM.select(`.toggle`).events('change')
+      .map(() => true),
+    startEdit$: DOM.select(`label`).events('dblclick')
+      .map(() => true),
+    cancelEdit$: DOM.select(`.edit`).events('keyup')
       .filter(ev => ev.keyCode === ESC_KEY)
-      .map(() => ({name})),
-    stopEdit$: DOM.select(`${name} .edit`).events('keyup')
+      .map(() => true),
+    stopEdit$: DOM.select(`.edit`).events('keyup')
       .filter(ev => ev.keyCode === ENTER_KEY)
-      .merge(DOM.select(`${name} .edit`).events('blur'))
-      .map(ev => ({title: ev.currentTarget.value, name}))
+      .merge(DOM.select(`.edit`).events('blur'))
+      .map(ev => ({title: ev.currentTarget.value}))
       .share()
   };
 }
 
 function model(props$, actions) {
   let sanitizedProps$ = props$.startWith({title: '', completed: false});
-  let editing$ = Rx.Observable
+  let editing$ = Observable
     .merge(
       actions.startEdit$.map(() => true),
       actions.stopEdit$.map(() => false),
       actions.cancelEdit$.map(() => false)
     )
     .startWith(false);
-  return Rx.Observable.combineLatest(
+  return Observable.combineLatest(
     sanitizedProps$, editing$,
     ({title, completed}, editing) =>
     ({title, completed, editing})
   );
 }
 
-function view(state$, name = '') {
+function view(state$) {
   return state$.map(({title, completed, editing}) => {
     const completedClass = (completed ? '.completed' : '');
     const editingClass = (editing ? '.editing' : '');
-    return h(`li.todoRoot${name}${completedClass}${editingClass}`, [
-      h('div.view', [
-        h('input.toggle', {
+    return li(`.todoRoot${completedClass}${editingClass}`, [
+      div('.view', [
+        input('.toggle', {
           type: 'checkbox',
           checked: propHook(elem => elem.checked = completed)
         }),
-        h('label', title),
-        h('button.destroy')
+        label(title),
+        button('.destroy')
       ]),
-      h('input.edit', {
+      input('.edit', {
         type: 'text',
         value: propHook(element => {
           element.value = title;
@@ -64,10 +64,10 @@ function view(state$, name = '') {
   });
 }
 
-function todoItem({DOM, props$}, name = '') {
-  let actions = intent(DOM, name);
+function TodoItem({DOM, props$}) {
+  let actions = intent(DOM);
   let state$ = model(props$, actions);
-  let vtree$ = view(state$, name);
+  let vtree$ = view(state$);
   return {
     DOM: vtree$,
     toggle$: actions.toggle$,
@@ -76,4 +76,4 @@ function todoItem({DOM, props$}, name = '') {
   };
 }
 
-export default todoItem;
+export default TodoItem;
