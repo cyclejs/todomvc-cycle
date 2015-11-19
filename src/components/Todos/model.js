@@ -1,4 +1,4 @@
-import {Rx} from '@cycle/core';
+import {Observable} from 'rx';
 
 function getFilterFn(route) {
   switch (route) {
@@ -87,7 +87,7 @@ function makeModification$(actions) {
     }
   });
 
-  return Rx.Observable.merge(
+  return Observable.merge(
     insertTodoMod$, deleteTodoMod$, toggleTodoMod$, toggleAllMod$,
     clearInputMod$, deleteCompletedsMod$, editTodoMod$, changeRouteMod$
   );

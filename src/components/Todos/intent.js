@@ -1,11 +1,9 @@
-import {Rx} from '@cycle/core';
+import {Observable} from 'rx';
 import {ENTER_KEY, ESC_KEY} from '../../utils';
 
 export default function intent(DOM, hashchange, initialHash, itemActions) {
-  const getTodoItemId = (name) => parseInt(name.replace('.item', ''))
-
   return {
-    changeRoute$: Rx.Observable.concat(
+    changeRoute$: Observable.concat(
       initialHash.map(hash => hash.replace('#', '')),
       hashchange.map(ev => ev.newURL.match(/\#[^\#]*$/)[0].replace('#', ''))
     ),
@@ -20,14 +18,11 @@ export default function intent(DOM, hashchange, initialHash, itemActions) {
       })
       .map(ev => String(ev.target.value).trim()),
 
-    toggleTodo$: itemActions.toggle$
-      .map(({name}) => name).map(getTodoItemId),
+    toggleTodo$: itemActions.toggle$,
 
-    deleteTodo$: itemActions.delete$
-      .map(({name}) => name).map(getTodoItemId),
+    deleteTodo$: itemActions.delete$,
 
-    editTodo$: itemActions.edit$
-      .map(({name, title}) => ({id: getTodoItemId(name), title})),
+    editTodo$: itemActions.edit$.map(({title}) => ({title})),
 
     toggleAll$: DOM.select('.toggle-all').events('click'),
 
