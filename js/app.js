@@ -18442,6 +18442,8 @@ Object.defineProperty(exports, '__esModule', {
   value: true
 });
 
+var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
+
 var _rx = require('rx');
 
 var _cycleDom = require('@cycle/dom');
@@ -18521,11 +18523,17 @@ function TodoItem(_ref3) {
   var actions = intent(DOM);
   var state$ = model(props$, actions);
   var vtree$ = view(state$);
+  var action$ = _rx.Observable.merge(actions.toggle$.map(function (ev) {
+    return _extends({ type: 'toggle' }, ev);
+  }), actions.delete$.map(function (ev) {
+    return _extends({ type: 'delete' }, ev);
+  }), actions.stopEdit$.map(function (ev) {
+    return _extends({ type: 'edit' }, ev);
+  }));
+
   return {
     DOM: vtree$,
-    toggle$: actions.toggle$,
-    delete$: actions.delete$,
-    edit$: actions.stopEdit$
+    action$: action$
   };
 }
 
@@ -18538,6 +18546,8 @@ module.exports = exports['default'];
 Object.defineProperty(exports, '__esModule', {
   value: true
 });
+
+var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
@@ -18587,15 +18597,12 @@ function amendStateWithChildren(DOM) {
           completed: data.completed,
           todoItem: {
             DOM: todoItem.DOM,
-            toggle$: todoItem.toggle$.map(function () {
-              return data.id;
-            }),
-            delete$: todoItem.delete$.map(function () {
-              return data.id;
-            }),
-            edit$: todoItem.edit$.map(function () {
-              return data.id;
+            action$: todoItem.action$.map(function (ev) {
+              return _extends({}, ev, { id: data.id });
             })
+            // toggle$: todoItem.toggle$.map(() => data.id),
+            // delete$: todoItem.delete$.map(() => data.id),
+            // edit$: todoItem.edit$.map(action => ({id: data.id, ...action}),
           }
         };
       }),
@@ -18605,23 +18612,21 @@ function amendStateWithChildren(DOM) {
   };
 }
 
-function makeItemActions(typeItemActions, amendedState$) {
-  return (0, _lodashMapvalues2['default'])(typeItemActions, function (irrelevant, actionKey) {
-    return amendedState$.filter(function (todosData) {
-      return todosData.list.length;
-    }).flatMapLatest(function (todosData) {
-      return _rx.Observable.merge(todosData.list.map(function (i) {
-        return i.todoItem[actionKey];
-      }));
-    });
-  });
-}
+// function makeItemActions(typeItemActions, amendedState$) {
+//   return mapValues(typeItemActions, (irrelevant, actionKey) =>
+//     amendedState$
+//       .filter(todosData => todosData.list.length)
+//       .flatMapLatest(todosData =>
+//         Observable.merge(todosData.list.map(i => i.todoItem[actionKey]))
+//       )
+//   );
+// }
 
-function replicateAll(objectStructure, realStreams, proxyStreams) {
-  (0, _lodashMapvalues2['default'])(objectStructure, function (irrelevant, key) {
-    realStreams[key].subscribe(proxyStreams[key].asObserver());
-  });
-}
+// function replicateAll(objectStructure, realStreams, proxyStreams) {
+//   mapValues(objectStructure, (irrelevant, key) => {
+//     realStreams[key].subscribe(proxyStreams[key].asObserver());
+//   });
+// }
 
 function Todos(_ref) {
   var DOM = _ref.DOM;
@@ -18630,15 +18635,22 @@ function Todos(_ref) {
   var localStorageSource = _ref.localStorageSource;
 
   var sourceTodosData$ = (0, _localStorageSource2['default'])(localStorageSource);
-  var typeItemActions = { toggle$: null, edit$: null, delete$: null };
-  var proxyItemActions = (0, _lodashMapvalues2['default'])(typeItemActions, function () {
-    return new _rx.Subject();
-  });
-  var actions = (0, _intent2['default'])(DOM, hashchange, initialHash, proxyItemActions);
+  // let typeItemActions = {toggle$: null, edit$: null, delete$: null};
+  var proxyItemAction$ = new _rx.Subject();
+  var actions = (0, _intent2['default'])(DOM, hashchange, initialHash, proxyItemAction$);
   var state$ = (0, _model2['default'])(actions, sourceTodosData$).shareReplay(1);
   var amendedState$ = state$.map(amendStateWithChildren(DOM)).shareReplay(1);
-  var itemActions = makeItemActions(typeItemActions, amendedState$);
-  replicateAll(typeItemActions, itemActions, proxyItemActions);
+  var itemAction$ = amendedState$.flatMapLatest(function (_ref2) {
+    var list = _ref2.list;
+    return _rx.Observable.merge(list.map(function (i) {
+      return i.todoItem.action$;
+    }));
+  });
+  itemAction$.subscribe(proxyItemAction$);
+
+  // makeItemActions(typeItemActions, amendedState$);
+  // replicateAll(typeItemActions, itemActions, proxyItemActions);
+
   return {
     DOM: (0, _view2['default'])(amendedState$),
     localStorageSink: (0, _localStorageSink2['default'])(state$)
@@ -18660,7 +18672,7 @@ var _rx = require('rx');
 
 var _utils = require('../../utils');
 
-function intent(DOM, hashchange, initialHash, itemActions) {
+function intent(DOM, hashchange, initialHash, itemAction$) {
   return {
     changeRoute$: _rx.Observable.concat(initialHash.map(function (hash) {
       return hash.replace('#', '');
@@ -18679,13 +18691,16 @@ function intent(DOM, hashchange, initialHash, itemActions) {
       return String(ev.target.value).trim();
     }),
 
-    toggleTodo$: itemActions.toggle$,
+    toggleTodo$: itemAction$.filter(function (action) {
+      return action.type === 'toggle';
+    }),
 
-    deleteTodo$: itemActions.delete$,
+    deleteTodo$: itemAction$.filter(function (action) {
+      return action.type === 'delete';
+    }),
 
-    editTodo$: itemActions.edit$.map(function (_ref) {
-      var title = _ref.title;
-      return { title: title };
+    editTodo$: itemAction$.filter(function (action) {
+      return action.type === 'edit';
     }),
 
     toggleAll$: DOM.select('.toggle-all').events('click'),
@@ -18837,9 +18852,9 @@ function makeModification$(actions) {
     };
   });
 
-  var toggleTodoMod$ = actions.toggleTodo$.map(function (id) {
+  var toggleTodoMod$ = actions.toggleTodo$.map(function (action) {
     return function (todosData) {
-      var todoIndex = searchTodoIndex(todosData.list, id);
+      var todoIndex = searchTodoIndex(todosData.list, action.id);
       var previousCompleted = todosData.list[todoIndex].completed;
       todosData.list[todoIndex].completed = !previousCompleted;
       return todosData;
@@ -18858,9 +18873,9 @@ function makeModification$(actions) {
     };
   });
 
-  var deleteTodoMod$ = actions.deleteTodo$.map(function (id) {
+  var deleteTodoMod$ = actions.deleteTodo$.map(function (action) {
     return function (todosData) {
-      var todoIndex = searchTodoIndex(todosData.list, id);
+      var todoIndex = searchTodoIndex(todosData.list, action.id);
       todosData.list.splice(todoIndex, 1);
       return todosData;
     };

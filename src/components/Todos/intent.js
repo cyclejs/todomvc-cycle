@@ -1,7 +1,7 @@
 import {Observable} from 'rx';
 import {ENTER_KEY, ESC_KEY} from '../../utils';
 
-export default function intent(DOM, hashchange, initialHash, itemActions) {
+export default function intent(DOM, hashchange, initialHash, itemAction$) {
   return {
     changeRoute$: Observable.concat(
       initialHash.map(hash => hash.replace('#', '')),
@@ -13,16 +13,16 @@ export default function intent(DOM, hashchange, initialHash, itemActions) {
 
     insertTodo$: DOM.select('.new-todo').events('keydown')
       .filter(ev => {
-        let trimmedVal = String(ev.target.value).trim();
+        const trimmedVal = String(ev.target.value).trim();
         return ev.keyCode === ENTER_KEY && trimmedVal;
       })
       .map(ev => String(ev.target.value).trim()),
 
-    toggleTodo$: itemActions.toggle$,
+    toggleTodo$: itemAction$.filter(action => action.type === 'toggle'),
 
-    deleteTodo$: itemActions.delete$,
+    deleteTodo$: itemAction$.filter(action => action.type === 'delete'),
 
-    editTodo$: itemActions.edit$.map(({title}) => ({title})),
+    editTodo$: itemAction$.filter(action => action.type === 'edit'),
 
     toggleAll$: DOM.select('.toggle-all').events('click'),
 

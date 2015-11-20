@@ -6,7 +6,6 @@ import view from './view';
 import deserialize from './local-storage-source';
 import serialize from './local-storage-sink';
 import TodoItem from '../TodoItem';
-import mapValues from 'lodash.mapvalues';
 
 function amendStateWithChildren(DOM) {
   return function (todosData) {
@@ -20,9 +19,7 @@ function amendStateWithChildren(DOM) {
           completed: data.completed,
           todoItem: {
             DOM: todoItem.DOM,
-            toggle$: todoItem.toggle$.map(() => data.id),
-            delete$: todoItem.delete$.map(() => data.id),
-            edit$: todoItem.edit$.map(() => data.id),
+            action$: todoItem.action$.map(ev => ({...ev, id: data.id}))
           }
         };
       }),
@@ -32,31 +29,16 @@ function amendStateWithChildren(DOM) {
   };
 }
 
-function makeItemActions(typeItemActions, amendedState$) {
-  return mapValues(typeItemActions, (irrelevant, actionKey) =>
-    amendedState$
-      .filter(todosData => todosData.list.length)
-      .flatMapLatest(todosData =>
-        Observable.merge(todosData.list.map(i => i.todoItem[actionKey]))
-      )
-  );
-}
-
-function replicateAll(objectStructure, realStreams, proxyStreams) {
-  mapValues(objectStructure, (irrelevant, key) => {
-    realStreams[key].subscribe(proxyStreams[key].asObserver());
-  });
-}
-
 function Todos({DOM, hashchange, initialHash, localStorageSource}) {
-  let sourceTodosData$ = deserialize(localStorageSource);
-  let typeItemActions = {toggle$: null, edit$: null, delete$: null};
-  let proxyItemActions = mapValues(typeItemActions, () => new Subject());
-  let actions = intent(DOM, hashchange, initialHash, proxyItemActions);
-  let state$ = model(actions, sourceTodosData$).shareReplay(1);
-  let amendedState$ = state$.map(amendStateWithChildren(DOM)).shareReplay(1);
-  let itemActions = makeItemActions(typeItemActions, amendedState$);
-  replicateAll(typeItemActions, itemActions, proxyItemActions);
+  const sourceTodosData$ = deserialize(localStorageSource);
+  const proxyItemAction$ = new Subject();
+  const actions = intent(DOM, hashchange, initialHash, proxyItemAction$);
+  const state$ = model(actions, sourceTodosData$);
+  const amendedState$ = state$.map(amendStateWithChildren(DOM)).shareReplay(1);
+  const itemAction$ = amendedState$.flatMapLatest(({list}) =>
+    Observable.merge(list.map(i => i.todoItem.action$))
+  );
+  itemAction$.subscribe(proxyItemAction$);
   return {
     DOM: view(amendedState$),
     localStorageSink: serialize(state$)

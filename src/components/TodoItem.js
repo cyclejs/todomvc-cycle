@@ -22,8 +22,8 @@ function intent(DOM) {
 }
 
 function model(props$, actions) {
-  let sanitizedProps$ = props$.startWith({title: '', completed: false});
-  let editing$ = Observable
+  const sanitizedProps$ = props$.startWith({title: '', completed: false});
+  const editing$ = Observable
     .merge(
       actions.startEdit$.map(() => true),
       actions.stopEdit$.map(() => false),
@@ -65,14 +65,18 @@ function view(state$) {
 }
 
 function TodoItem({DOM, props$}) {
-  let actions = intent(DOM);
-  let state$ = model(props$, actions);
-  let vtree$ = view(state$);
+  const actions = intent(DOM);
+  const state$ = model(props$, actions);
+  const vtree$ = view(state$);
+  const action$ = Observable.merge(
+    actions.toggle$.map(ev => ({type: 'toggle', ...ev})),
+    actions.delete$.map(ev => ({type: 'delete', ...ev})),
+    actions.stopEdit$.map(ev => ({type: 'edit', ...ev}))
+  );
+
   return {
     DOM: vtree$,
-    toggle$: actions.toggle$,
-    delete$: actions.delete$,
-    edit$: actions.stopEdit$,
+    action$,
   };
 }
 
