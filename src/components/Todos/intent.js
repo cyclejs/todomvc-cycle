@@ -20,9 +20,9 @@ export default function intent(DOM, hashchange, initialHash, itemAction$) {
 
     toggleTodo$: itemAction$.filter(action => action.type === 'toggle'),
 
-    deleteTodo$: itemAction$.filter(action => action.type === 'delete'),
+    deleteTodo$: itemAction$.filter(action => action.type === 'destroy'),
 
-    editTodo$: itemAction$.filter(action => action.type === 'edit'),
+    editTodo$: itemAction$.filter(action => action.type === 'doneEdit'),
 
     toggleAll$: DOM.select('.toggle-all').events('click'),
 

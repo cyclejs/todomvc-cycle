@@ -3,31 +3,31 @@ import {button, div, input, label, li} from '@cycle/dom';
 import {propHook, ENTER_KEY, ESC_KEY} from '../utils';
 
 function intent(DOM) {
-  return {
-    delete$: DOM.select(`.destroy`).events('click')
-      .map(() => true),
-    toggle$: DOM.select(`.toggle`).events('change')
-      .map(() => true),
-    startEdit$: DOM.select(`label`).events('dblclick')
-      .map(() => true),
-    cancelEdit$: DOM.select(`.edit`).events('keyup')
+  return Observable.merge(
+    DOM.select(`.destroy`).events('click').map(() => ({type: 'destroy'})),
+
+    DOM.select(`.toggle`).events('change').map(() => ({type: 'toggle'})),
+
+    DOM.select(`label`).events('dblclick').map(() => ({type: 'startEdit'})),
+
+    DOM.select(`.edit`).events('keyup')
       .filter(ev => ev.keyCode === ESC_KEY)
-      .map(() => true),
-    stopEdit$: DOM.select(`.edit`).events('keyup')
+      .map(() => ({type: 'cancelEdit'})),
+
+    DOM.select(`.edit`).events('keyup')
       .filter(ev => ev.keyCode === ENTER_KEY)
       .merge(DOM.select(`.edit`).events('blur'))
-      .map(ev => ({title: ev.currentTarget.value}))
-      .share()
-  };
+      .map(ev => ({title: ev.currentTarget.value, type: 'doneEdit'}))
+  ).share();
 }
 
-function model(props$, actions) {
+function model(props$, action$) {
   const sanitizedProps$ = props$.startWith({title: '', completed: false});
   const editing$ = Observable
     .merge(
-      actions.startEdit$.map(() => true),
-      actions.stopEdit$.map(() => false),
-      actions.cancelEdit$.map(() => false)
+      action$.filter(a => a.type === 'startEdit').map(() => true),
+      action$.filter(a => a.type === 'doneEdit').map(() => false),
+      action$.filter(a => a.type === 'cancelEdit').map(() => false)
     )
     .startWith(false);
   return Observable.combineLatest(
@@ -65,14 +65,9 @@ function view(state$) {
 }
 
 function TodoItem({DOM, props$}) {
-  const actions = intent(DOM);
-  const state$ = model(props$, actions);
+  const action$ = intent(DOM);
+  const state$ = model(props$, action$);
   const vtree$ = view(state$);
-  const action$ = Observable.merge(
-    actions.toggle$.map(ev => ({type: 'toggle', ...ev})),
-    actions.delete$.map(ev => ({type: 'delete', ...ev})),
-    actions.stopEdit$.map(ev => ({type: 'edit', ...ev}))
-  );
 
   return {
     DOM: vtree$,
