@@ -2,8 +2,8 @@ import {Rx} from '@cycle/core';
 import intent from './intent';
 import model from './model';
 import view from './view';
-import deserialize from './local-storage-source';
-import serialize from './local-storage-sink';
+import deserialize from './deserialize';
+import serialize from './serialize';
 import todoItem from '../todo-item';
 import mapValues from 'lodash.mapvalues';
 
@@ -41,18 +41,27 @@ function replicateAll(objectStructure, realStreams, proxyStreams) {
   });
 }
 
-function todos({DOM, hashchange, initialHash, localStorageSource}) {
-  let sourceTodosData$ = deserialize(localStorageSource);
-  let typeItemActions = {toggle$: null, edit$: null, delete$: null};
-  let proxyItemActions = mapValues(typeItemActions, () => new Rx.Subject());
-  let actions = intent(DOM, hashchange, initialHash, proxyItemActions);
-  let state$ = model(actions, sourceTodosData$).shareReplay(1);
-  let amendedState$ = state$.map(amendStateWithChildren(DOM)).shareReplay(1);
-  let itemActions = makeItemActions(typeItemActions, amendedState$);
+function todos({DOM, hashchange, initialHash, storage}) {
+  const localStorage$ = storage.local.getItem('todos-cycle').take(1)
+  const sourceTodosData$ = deserialize(localStorage$);
+  const typeItemActions = {toggle$: null, edit$: null, delete$: null};
+  const proxyItemActions = mapValues(typeItemActions, () => new Rx.Subject());
+  const actions = intent(DOM, hashchange, initialHash, proxyItemActions);
+  const state$ = model(actions, sourceTodosData$).shareReplay(1);
+  const amendedState$ = state$.map(amendStateWithChildren(DOM)).shareReplay(1);
+  const itemActions = makeItemActions(typeItemActions, amendedState$);
+
+  const storage$ = serialize(state$)
+    .map((state) => ({
+      key: 'todos-cycle',
+      value: state
+    }));
+
   replicateAll(typeItemActions, itemActions, proxyItemActions);
+
   return {
     DOM: view(amendedState$),
-    localStorageSink: serialize(state$)
+    storage: storage$
   };
 }
 
