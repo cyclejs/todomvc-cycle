@@ -107,7 +107,7 @@ function model(actions, sourceTodosData$) {
 
   return sourceTodosData$
     .combineLatest(modification$)
-    .map((combined) => combined[1](combined[0]))
+    .map(([todoData, modFn]) => modFn(todoData))
     .shareReplay(1);
 }
 
