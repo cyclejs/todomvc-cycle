@@ -9,10 +9,11 @@ function getFilterFn(route) {
 }
 
 function searchTodoIndex(todosList, todoid) {
-  let top = todosList.length;
-  let bottom = 0;
   let pointerId;
   let index;
+  let top = todosList.length;
+  let bottom = 0;
+
   for (var i = todosList.length - 1; i >= 0; i--) { // binary search
     index = bottom + ((top - bottom) >> 1);
     pointerId = todosList[index].id;
@@ -24,15 +25,16 @@ function searchTodoIndex(todosList, todoid) {
       top = index;
     }
   }
+
   return null;
 }
 
 function makeModification$(actions) {
-  let clearInputMod$ = actions.clearInput$.map(() => (todosData) => {
+  const clearInputMod$ = actions.clearInput$.map(() => (todosData) => {
     return todosData;
   });
 
-  let insertTodoMod$ = actions.insertTodo$.map((todoTitle) => (todosData) => {
+  const insertTodoMod$ = actions.insertTodo$.map((todoTitle) => (todosData) => {
     let lastId = todosData.list.length > 0 ?
       todosData.list[todosData.list.length - 1].id :
       0;
@@ -41,45 +43,52 @@ function makeModification$(actions) {
       title: todoTitle,
       completed: false
     });
+
     return todosData;
   });
 
-  let editTodoMod$ = actions.editTodo$.map(action => (todosData) => {
+  const editTodoMod$ = actions.editTodo$.map(action => (todosData) => {
     let todoIndex = searchTodoIndex(todosData.list, action.id);
     todosData.list[todoIndex].title = action.title;
+
     return todosData;
   });
 
-  let toggleTodoMod$ = actions.toggleTodo$.map(id => (todosData) => {
+  const toggleTodoMod$ = actions.toggleTodo$.map(id => (todosData) => {
     let todoIndex = searchTodoIndex(todosData.list, id);
     let previousCompleted = todosData.list[todoIndex].completed;
     todosData.list[todoIndex].completed = !previousCompleted;
+
     return todosData;
   });
 
-  let toggleAllMod$ = actions.toggleAll$.map(() => (todosData) => {
+  const toggleAllMod$ = actions.toggleAll$.map(() => (todosData) => {
     let allAreCompleted = todosData.list
       .reduce((x, y) => x && y.completed, true);
     todosData.list.forEach((todoData) => {
       todoData.completed = allAreCompleted ? false : true;
     });
+
     return todosData;
   });
 
-  let deleteTodoMod$ = actions.deleteTodo$.map(id => (todosData) => {
+  const deleteTodoMod$ = actions.deleteTodo$.map(id => (todosData) => {
     let todoIndex = searchTodoIndex(todosData.list, id);
     todosData.list.splice(todoIndex, 1);
+
     return todosData;
   });
 
-  let deleteCompletedsMod$ = actions.deleteCompleteds$.map(() => (todosData) => {
+  const deleteCompletedsMod$ = actions.deleteCompleteds$.map(() => (todosData) => {
     todosData.list = todosData.list
       .filter(todoData => todoData.completed === false);
+
     return todosData
   });
 
   let changeRouteMod$ = actions.changeRoute$.startWith('/').map(route => {
-    let filterFn = getFilterFn(route)
+    const filterFn = getFilterFn(route)
+
     return (todosData) => {
       todosData.filter = route.replace('/', '').trim();
       todosData.filterFn = filterFn;
@@ -94,11 +103,11 @@ function makeModification$(actions) {
 }
 
 function model(actions, sourceTodosData$) {
-  let modification$ = makeModification$(actions);
+  const modification$ = makeModification$(actions);
 
   return sourceTodosData$
-    .merge(modification$)
-    .scan((todosData, modFn) => modFn(todosData))
+    .combineLatest(modification$)
+    .map((combined) => combined[1](combined[0]))
     .shareReplay(1);
 }
 
