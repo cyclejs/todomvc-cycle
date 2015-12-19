@@ -106,9 +106,10 @@ function model(actions, sourceTodosData$) {
   const modification$ = makeModification$(actions);
 
   return sourceTodosData$
-    .combineLatest(modification$)
-    .map(([todoData, modFn]) => modFn(todoData))
+    .concat(modification$)
+    .scan((todosData, modFn) => modFn(todosData))
     .shareReplay(1);
 }
+
 
 export default model;

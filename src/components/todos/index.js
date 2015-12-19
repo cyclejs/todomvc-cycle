@@ -42,7 +42,7 @@ function replicateAll(objectStructure, realStreams, proxyStreams) {
 }
 
 function todos({DOM, hashchange, initialHash, storage}) {
-  const localStorage$ = storage.local.getItem('todos-cycle').take(1)
+  const localStorage$ = storage.local.getItem('todos-cycle').take(1);
   const sourceTodosData$ = deserialize(localStorage$);
   const typeItemActions = {toggle$: null, edit$: null, delete$: null};
   const proxyItemActions = mapValues(typeItemActions, () => new Rx.Subject());
