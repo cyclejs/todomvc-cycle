@@ -1,10 +1,10 @@
-import {Rx} from '@cycle/core';
-import {h} from '@cycle/dom';
+import {a, button, div, footer, h1, header, input, li,
+        section, span, strong, ul} from '@cycle/dom';
 
 function renderHeader() {
-  return h('header.header', [
-    h('h1', 'todos'),
-    h('input.new-todo', {
+  return header('.header', [
+    h1('todos'),
+    input('.new-todo', {
       type: 'text',
       value: '',
       attributes: {placeholder: 'What needs to be done?'},
@@ -16,14 +16,14 @@ function renderHeader() {
 
 function renderMainSection(todosData) {
   let allCompleted = todosData.list.reduce((x, y) => x && y.completed, true);
-  return h('section.main', {
+  return section('.main', {
     style: {'display': todosData.list.length ? '' : 'none'}
   }, [
-    h('input.toggle-all', {
+    input('.toggle-all', {
       type: 'checkbox',
       checked: allCompleted
     }),
-    h('ul.todo-list', todosData.list
+    ul('.todo-list', todosData.list
       .filter(todosData.filterFn)
       .map(data => data.todoItem.DOM)
     )
@@ -35,32 +35,35 @@ function renderFooter(todosData) {
     .filter(todoData => todoData.completed)
     .length;
   let amountActive = todosData.list.length - amountCompleted;
-  return h('footer.footer', {
+  return footer('.footer', {
     style: {'display': todosData.list.length ? '' : 'none'}
   }, [
-    h('span.todo-count', [
-      h('strong', String(amountActive)),
+    span('.todo-count', [
+      strong(String(amountActive)),
       ' item' + (amountActive !== 1 ? 's' : '') + ' left'
     ]),
-    h('ul.filters', [
-      h('li', [
-        h('a' + (todosData.filter === '' ? '.selected' : ''), {
-          attributes: {'href': '#/'}
+    ul('.filters', [
+      li([
+        a({
+          attributes: {'href': '#/'},
+          className: todosData.filter === '' ? '.selected' : ''
         }, 'All')
       ]),
-      h('li', [
-        h('a' + (todosData.filter === 'active' ? '.selected' : ''), {
-          attributes: {'href': '#/active'}
+      li([
+        a({
+          attributes: {'href': '#/active'},
+          className: todosData.filter === 'active' ? '.selected' : ''
         }, 'Active')
       ]),
-      h('li', [
-        h('a' + (todosData.filter === 'completed' ? '.selected' : ''), {
-          attributes: {'href': '#/completed'}
+      li([
+        a({
+          attributes: {'href': '#/completed'},
+          className: todosData.filter === 'completed' ? '.selected' : ''
         }, 'Completed')
       ])
     ]),
     (amountCompleted > 0 ?
-      h('button.clear-completed', 'Clear completed (' + amountCompleted + ')')
+      button('.clear-completed', 'Clear completed (' + amountCompleted + ')')
       : null
     )
   ])
@@ -68,7 +71,7 @@ function renderFooter(todosData) {
 
 export default function view(todos$) {
   return todos$.map(todos =>
-    h('div', [
+    div([
       renderHeader(),
       renderMainSection(todos),
       renderFooter(todos)

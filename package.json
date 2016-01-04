@@ -8,22 +8,33 @@
   },
   "license": "MIT",
   "private": true,
+  "contributors": [{
+    "name": "Frederik Krautwald"
+  }],
+  "dependencies": {
+    "@cycle/core": "6.0.0",
+    "@cycle/dom": "8.1.0",
+    "@cycle/isolate": "1.2.x",
+    "@cycle/storage": "^2.0.3",
+    "rx": "4.0.7",
+    "todomvc-app-css": "2.0.3",
+    "todomvc-common": "1.0.1"
+  },
   "devDependencies": {
-    "@cycle/core": "3.1.x",
-    "@cycle/dom": "5.0.x",
-    "todomvc-app-css": "2.0.x",
-    "todomvc-common": "^1.0.1",
-    "babel": "^5.1.13",
-    "babelify": "6.2.x",
-    "uglify-js": "2.4.24",
-    "browserify": "11.0.1"
+    "babel": "5.8.29",
+    "babelify": "6.2.0",
+    "uglify-js": "2.6.1",
+    "browserify": "12.0.1",
+    "live-server": "^0.9.0",
+    "npm-run-all": "^1.4.0",
+    "watchify": "^3.6.1"
   },
   "scripts": {
     "build-debug": "mkdir -p js && browserify src/app.js -t babelify --outfile js/app.js",
+    "watch:js": "mkdir -p js && watchify src/app.js -t babelify --outfile js/app.js -dv",
+    "serve": "live-server ./",
     "uglify": "uglifyjs js/app.js -o js/app.min.js",
-    "build": "npm run build-debug && npm run uglify"
-  },
-  "dependencies": {
-    "lodash.mapvalues": "^3.0.1"
+    "build": "npm run build-debug && npm run uglify",
+    "start": "npm-run-all --parallel watch:js serve"
   }
 }
