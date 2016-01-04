@@ -4,20 +4,20 @@ import {propHook, ENTER_KEY, ESC_KEY} from '../utils';
 
 function intent(DOM) {
   return Observable.merge(
-    DOM.select(`.destroy`).events('click').map(() => ({type: 'destroy'})),
+    DOM.select('.destroy').events('click').map(() => ({type: 'destroy'})),
 
-    DOM.select(`.toggle`).events('change').map(() => ({type: 'toggle'})),
+    DOM.select('.toggle').events('change').map(() => ({type: 'toggle'})),
 
-    DOM.select(`label`).events('dblclick').map(() => ({type: 'startEdit'})),
+    DOM.select('label').events('dblclick').map(() => ({type: 'startEdit'})),
 
-    DOM.select(`.edit`).events('keyup')
+    DOM.select('.edit').events('keyup')
       .filter(ev => ev.keyCode === ESC_KEY)
       .map(() => ({type: 'cancelEdit'})),
 
-    DOM.select(`.edit`).events('keyup')
+    DOM.select('.edit').events('keyup')
       .filter(ev => ev.keyCode === ENTER_KEY)
-      .merge(DOM.select(`.edit`).events('blur'))
-      .map(ev => ({title: ev.currentTarget.value, type: 'doneEdit'}))
+      .merge(DOM.select('.edit').events('blur', true))
+      .map(ev => ({title: ev.target.value, type: 'doneEdit'}))
   ).share();
 }
 

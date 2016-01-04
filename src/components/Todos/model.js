@@ -9,10 +9,10 @@ function getFilterFn(route) {
 }
 
 function searchTodoIndex(todosList, todoid) {
-  let top = todosList.length;
-  let bottom = 0;
   let pointerId;
   let index;
+  let top = todosList.length;
+  let bottom = 0;
   for (let i = todosList.length - 1; i >= 0; i--) { // binary search
     index = bottom + ((top - bottom) >> 1);
     pointerId = todosList[index].id;
@@ -97,7 +97,7 @@ function model(actions, sourceTodosData$) {
   const modification$ = makeModification$(actions);
 
   return sourceTodosData$
-    .merge(modification$)
+    .concat(modification$)
     .scan((todosData, modFn) => modFn(todosData))
     .shareReplay(1);
 }
