@@ -3,34 +3,32 @@ import isolate from '@cycle/isolate'
 import intent from './intent';
 import model from './model';
 import view from './view';
-import deserialize from './local-storage-source';
-import serialize from './local-storage-sink';
+import deserialize from './storage-source';
+import serialize from './storage-sink';
 import TodoItem from '../TodoItem';
 
-function amendStateWithChildren(DOM) {
+function amendStateWithChildren(DOMSource) {
   return function (todosData) {
     return {
+      ...todosData,
       list: todosData.list.map(data => {
         const props$ = Observable.just(data);
-        const todoItem = isolate(TodoItem)({DOM, props$});
+        const todoItem = isolate(TodoItem)({DOM: DOMSource, props$});
         return {
-          id: data.id,
-          title: data.title,
-          completed: data.completed,
+          ...data,
           todoItem: {
             DOM: todoItem.DOM,
             action$: todoItem.action$.map(ev => ({...ev, id: data.id}))
           }
         };
       }),
-      filter: todosData.filter,
-      filterFn: todosData.filterFn,
     };
   };
 }
 
-function Todos({DOM, hashchange, initialHash, localStorageSource}) {
-  const sourceTodosData$ = deserialize(localStorageSource);
+function Todos({DOM, hashchange, initialHash, storage}) {
+  const localStorage$ = storage.local.getItem('todos-cycle').take(1);
+  const sourceTodosData$ = deserialize(localStorage$);
   const proxyItemAction$ = new Subject();
   const actions = intent(DOM, hashchange, initialHash, proxyItemAction$);
   const state$ = model(actions, sourceTodosData$);
@@ -39,9 +37,12 @@ function Todos({DOM, hashchange, initialHash, localStorageSource}) {
     Observable.merge(list.map(i => i.todoItem.action$))
   );
   itemAction$.subscribe(proxyItemAction$);
+  const storage$ = serialize(state$).map((state) => ({
+    key: 'todos-cycle', value: state
+  }));
   return {
     DOM: view(amendedState$),
-    localStorageSink: serialize(state$)
+    storage: storage$,
   };
 }
 
