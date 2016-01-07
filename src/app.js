@@ -10,8 +10,6 @@ const main = Todos;
 
 run(main, {
   DOM: CycleDOM.makeDOMDriver('.todoapp'),
-  // localStorageSource: CustomDrivers.makeLocalStorageSourceDriver('todos-cycle'),
-  // localStorageSink: CustomDrivers.makeLocalStorageSinkDriver('todos-cycle'),
   initialHash: () => Observable.just(window.location.hash),
   hashchange: () => Observable.fromEvent(window, 'hashchange'),
   storage: storageDriver
