@@ -66,8 +66,8 @@ function Todos({DOM, hashchange, initialHash, storage}) {
   // and turns it into a stream sending a JSON object.
   const sourceTodosData$ = deserialize(localStorage$);
   // THE PROXY ITEM ACTION STREAM
-  // We use an Rx.Subject as a proxy for the item actions,
-  // so that we have a hot Observable of item actions later on.
+  // We use an Rx.Subject as a proxy for all the actions that stream
+  // from the different todo items.
   const proxyItemAction$ = new Subject();
   // THE INTENT (MVI PATTERN)
   // Pass relevant sources to the intent funtion, which set up
