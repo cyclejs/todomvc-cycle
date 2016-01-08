@@ -41,6 +41,6 @@
     "serve": "live-server ./",
     "uglify": "uglifyjs js/app.js -o js/app.min.js",
     "build": "npm run build-debug && npm run uglify",
-    "start": "npm-run-all watch:js serve"
+    "start": "npm-run-all --parallel watch:js serve"
   }
 }
