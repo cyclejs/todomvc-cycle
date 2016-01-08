@@ -15,6 +15,8 @@ function renderHeader() {
 }
 
 function renderMainSection(todosData) {
+
+  console.log(todosData.filterFn.toString());
   let allCompleted = todosData.list.reduce((x, y) => x && y.completed, true);
   return section('.main', {
     style: {'display': todosData.list.length ? '' : 'none'}
@@ -24,6 +26,8 @@ function renderMainSection(todosData) {
       checked: allCompleted
     }),
     ul('.todo-list', todosData.list
+      // Apply filter function according to
+      // route. 
       .filter(todosData.filterFn)
       .map(data => data.todoItem.DOM)
     )
@@ -69,6 +73,11 @@ function renderFooter(todosData) {
   ])
 }
 
+// THE VIEW
+// This function expects the stream of todosData
+// from the model function and turns it into a
+// virtual DOM stream that is then ultimately returned intot
+// the DOM sink in the index.js.
 export default function view(todos$) {
   return todos$.map(todos =>
     div([
