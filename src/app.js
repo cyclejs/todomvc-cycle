@@ -10,8 +10,8 @@ const main = Todos;
 
 // THE ENTRY POINT
 // This is where the whole story starts.
-// `run` receives a main function and an object with
-// the source streams.
+// `run` receives a main function and an object
+// with the drivers.
 run(main, {
   // THE DOM DRIVER
   // We create a DOM driver by passing
