@@ -14,8 +14,8 @@ const main = Todos;
 // with the drivers.
 run(main, {
   // THE DOM DRIVER
-  // We create a DOM driver by passing
-  // a DOM selector to the `makeDOMDriver` function.
+  // `makeDOMDriver(container)` from Cycle DOM returns a
+  // driver function to interact with the DOM.
   DOM: CycleDOM.makeDOMDriver('.todoapp'),
   // THE INITAL HASH STREAM
   // A stream that only delivers the initial hash value.
