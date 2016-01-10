@@ -5,8 +5,8 @@ import {ENTER_KEY, ESC_KEY} from '../../utils';
 export default function intent(DOM, hashchange, initialHash, itemAction$) {
   return {
     // THE ROUTE STREAM
-    // The stream of the initial hash is being concatenated with
-    // the hashchange stream.
+    // A stream that provides the URL hash value whenever
+    // the route changes, starting with the initial hash value.
     changeRoute$: Observable.concat(
       initialHash.map(hash => hash.replace('#', '')),
       hashchange.map(ev => ev.newURL.match(/\#[^\#]*$/)[0].replace('#', ''))

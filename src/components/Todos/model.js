@@ -1,7 +1,7 @@
 import {Observable} from 'rx';
 
-// A helper function to get filter function to filter the todo items
-// in the virtual dome according to which route we are on.
+// A helper function that provides filter functions
+// depending on the route value.
 function getFilterFn(route) {
   switch (route) {
     case '/active': return (task => task.completed === false);
@@ -10,7 +10,9 @@ function getFilterFn(route) {
   }
 }
 
-// A helper to search for the todo index.
+// This search function is used in the `makeModification$`
+// function below to retrieve the index of a todo in the todosList
+// in order to make a modification to the todo data.
 function searchTodoIndex(todosList, todoid) {
   let pointerId;
   let index;
@@ -31,7 +33,7 @@ function searchTodoIndex(todosList, todoid) {
 }
 
 // MAKE MODIFICATION STREAM
-// A function that takes the intent on the todo list
+// A function that takes the actions on the todo list
 // and returns a stream of functions that expect todosData (the data model)
 // and return a modified version of the data.
 function makeModification$(actions) {
@@ -111,17 +113,11 @@ function model(actions, sourceTodosData$) {
   const modification$ = makeModification$(actions);
 
   // RETURN THE MODEL DATA
-  // Take the initial localStorage data stream...
   return sourceTodosData$
-    // ...and concatenate it with the stream of modification
-    // functions...
     .concat(modification$)
-    // ...and apply every modification function on the
-    // current todosData which is the "accumulater"
-    // of this `.scan` function.
     .scan((todosData, modFn) => modFn(todosData))
-    // Always serve any subscriber the latest state that
-    // was flowing through this Observable.
+    // Make this a hot Observable with with
+    // a replay buffer of one item.
     .shareReplay(1);
 }
 

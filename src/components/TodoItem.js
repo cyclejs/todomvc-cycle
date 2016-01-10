@@ -35,8 +35,8 @@ function model(props$, action$) {
   // If the list item has no data set it as empty and not completed.
   const sanitizedProps$ = props$.startWith({title: '', completed: false});
   // THE EDITING STREAM
-  // Create an editing stream that consists only of
-  // actions related to editing.
+  // Create a stream that emits booleans that represent the
+  // "is editing" state.
   const editing$ = Observable
     .merge(
       action$.filter(a => a.type === 'startEdit').map(() => true),
