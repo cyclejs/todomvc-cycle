@@ -22,6 +22,8 @@ const mergeWithDefaultTodosData = todosData => {
   return merge(defaultTodosData, todosData);
 }
 
+// Take localStorage todoData stream and transform into
+// a JavaScript object. Set default data.
 export default function deserialize(localStorageValue$) {
   return localStorageValue$
     .map(safeJSONParse)

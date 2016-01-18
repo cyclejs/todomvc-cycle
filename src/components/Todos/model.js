@@ -1,5 +1,7 @@
 import {Observable} from 'rx';
 
+// A helper function that provides filter functions
+// depending on the route value.
 function getFilterFn(route) {
   switch (route) {
     case '/active': return (task => task.completed === false);
@@ -8,6 +10,9 @@ function getFilterFn(route) {
   }
 }
 
+// This search function is used in the `makeModification$`
+// function below to retrieve the index of a todo in the todosList
+// in order to make a modification to the todo data.
 function searchTodoIndex(todosList, todoid) {
   let pointerId;
   let index;
@@ -27,6 +32,10 @@ function searchTodoIndex(todosList, todoid) {
   return null;
 }
 
+// MAKE MODIFICATION STREAM
+// A function that takes the actions on the todo list
+// and returns a stream of functions that expect todosData (the data model)
+// and return a modified version of the data.
 function makeModification$(actions) {
   const clearInputMod$ = actions.clearInput$.map(() => (todosData) => {
     return todosData;
@@ -93,12 +102,22 @@ function makeModification$(actions) {
   );
 }
 
+// THIS IS THE MODEL FUNCTION
+// It expects the actions coming in from the todo items and
+// the initial localStorage data.
 function model(actions, sourceTodosData$) {
+  // THE BUSINESS LOGIC
+  // Actions are passed to the `makeModification$` function
+  // which creates a stream of modification functions that needs
+  // to be applied on the todoData when an action happens.
   const modification$ = makeModification$(actions);
 
+  // RETURN THE MODEL DATA
   return sourceTodosData$
     .concat(modification$)
     .scan((todosData, modFn) => modFn(todosData))
+    // Make this a hot Observable with with
+    // a replay buffer of one item.
     .shareReplay(1);
 }
 

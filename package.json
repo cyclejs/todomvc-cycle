@@ -8,9 +8,15 @@
   },
   "license": "MIT",
   "private": true,
-  "contributors": [{
-    "name": "Frederik Krautwald"
-  }],
+  "contributors": [
+    {
+      "name": "Frederik Krautwald"
+    },
+    {
+      "name": "Kahlil Lechelt",
+      "email": "hello@kahlil.info"
+    }
+  ],
   "dependencies": {
     "@cycle/core": "6.0.0",
     "@cycle/dom": "8.1.0",
