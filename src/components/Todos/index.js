@@ -20,10 +20,10 @@ function amendStateWithChildren(DOMSource) {
       list: todosData.list.map(data => {
         // Turn the data item into an Observable
         const props$ = Observable.just(data);
-        // Create scoped todo item data flow components.
+        // Create scoped todo item dataflow component.
         const todoItem = isolate(TodoItem)({DOM: DOMSource, props$});
 
-        // Return the new data item for the list property arrayj.
+        // Return the new data item for the list property array.
         return {
           ...data,
           // This is a new property containing the DOM- and action stream of
@@ -40,12 +40,12 @@ function amendStateWithChildren(DOMSource) {
 
 // THE TODOS FUNCTION
 // This is the Todos component which is being exported below.
-// The sources that have been passed to `run` as well are immediately
-// deconstructed into the variables `DOM`, `hashchange`, `initialHash` & `storage`.
+// Using destructuring, we pick the sources DOM, hashchange, initialHash and storage
+// from the sources object as argument.
 function Todos({DOM, hashchange, initialHash, storage}) {
   // THE LOCALSTORAGE STREAM
   // Here we create a localStorage stream that only streams
-  // the first value received from localStorage in order to
+  // the first value read from localStorage in order to
   // supply the application with initial state.
   const localStorage$ = storage.local.getItem('todos-cycle').take(1);
   // THE INITIAL TODO DATA
