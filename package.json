@@ -29,15 +29,16 @@
   "devDependencies": {
     "babel": "5.8.29",
     "babelify": "6.2.0",
-    "uglify-js": "2.6.1",
     "browserify": "12.0.1",
     "live-server": "^0.9.0",
+    "mkdirp": "^0.5.1",
     "npm-run-all": "^1.4.0",
+    "uglify-js": "2.6.1",
     "watchify": "^3.6.1"
   },
   "scripts": {
-    "build-debug": "mkdir -p js && browserify src/app.js -t babelify --outfile js/app.js",
-    "watch:js": "mkdir -p js && watchify src/app.js -t babelify --outfile js/app.js -dv",
+    "build-debug": "mkdirp js && browserify src/app.js -t babelify --outfile js/app.js",
+    "watch:js": "mkdirp js && watchify src/app.js -t babelify --outfile js/app.js -dv",
     "serve": "live-server ./",
     "uglify": "uglifyjs js/app.js -o js/app.min.js",
     "build": "npm run build-debug && npm run uglify",
