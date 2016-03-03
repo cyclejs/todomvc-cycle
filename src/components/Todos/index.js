@@ -57,7 +57,7 @@ function Todos({DOM, hashchange, initialHash, storage}) {
   // from the different todo items.
   const proxyItemAction$ = new Subject();
   // THE INTENT (MVI PATTERN)
-  // Pass relevant sources to the intent funtion, which set up
+  // Pass relevant sources to the intent function, which set up
   // streams that model the users intentions.
   const actions = intent(DOM, hashchange, initialHash, proxyItemAction$);
   // THE MODEL (MVI PATTERN)
