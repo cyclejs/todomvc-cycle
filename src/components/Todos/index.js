@@ -40,9 +40,9 @@ function amendStateWithChildren(DOMSource) {
 
 // THE TODOS FUNCTION
 // This is the Todos component which is being exported below.
-// Using destructuring, we pick the sources DOM, hashchange, initialHash and storage
+// Using destructuring, we pick the sources DOM, History and storage
 // from the sources object as argument.
-function Todos({DOM, hashchange, initialHash, storage}) {
+function Todos({DOM, History, storage}) {
   // THE LOCALSTORAGE STREAM
   // Here we create a localStorage stream that only streams
   // the first value read from localStorage in order to
@@ -59,7 +59,7 @@ function Todos({DOM, hashchange, initialHash, storage}) {
   // THE INTENT (MVI PATTERN)
   // Pass relevant sources to the intent function, which set up
   // streams that model the users intentions.
-  const actions = intent(DOM, hashchange, initialHash, proxyItemAction$);
+  const actions = intent(DOM, History, proxyItemAction$);
   // THE MODEL (MVI PATTERN)
   // Actions get passed to the model function which transforms the data
   // coming through the intent streams and prepares the data for the view.
@@ -88,6 +88,7 @@ function Todos({DOM, hashchange, initialHash, storage}) {
   // storage stream to localStorage.
   return {
     DOM: view(amendedState$),
+    History: actions.url$,
     storage: storage$,
   };
 }
