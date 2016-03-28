@@ -1,5 +1,6 @@
 import {run} from '@cycle/core';
 import CycleDOM from '@cycle/dom';
+import {makeHistoryDriver} from '@cycle/history'
 import {Observable} from 'rx';
 import storageDriver from '@cycle/storage';
 // THE MAIN FUNCTION
@@ -17,12 +18,9 @@ run(main, {
   // `makeDOMDriver(container)` from Cycle DOM returns a
   // driver function to interact with the DOM.
   DOM: CycleDOM.makeDOMDriver('.todoapp'),
-  // THE INITAL HASH STREAM
-  // A driver that only delivers the initial hash value as source.
-  initialHash: () => Observable.just(window.location.hash),
-  // THE HASH CHANGE STREAM
-  // A driver that delivers the hash value on the hashChange event, as source.
-  hashchange: () => Observable.fromEvent(window, 'hashchange'),
+  // THE HISTORY DRIVER
+  // A driver to interact with browser history
+  History: makeHistoryDriver({hash: true}),
   // THE STORAGE DRIVER
   // The storage driver which can be used to access values for
   // local- and sessionStorage keys as streams.

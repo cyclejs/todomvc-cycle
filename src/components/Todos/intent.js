@@ -1,16 +1,25 @@
+import {filterLinks} from '@cycle/history';
 import {Observable} from 'rx';
 import {ENTER_KEY, ESC_KEY} from '../../utils';
 
 // THE INTENT FOR THE LIST
-export default function intent(DOM, hashchange, initialHash, itemAction$) {
+export default function intent(DOM, History, itemAction$) {
   return {
     // THE ROUTE STREAM
-    // A stream that provides the URL hash value whenever
-    // the route changes, starting with the initial hash value.
-    changeRoute$: Observable.concat(
-      initialHash.map(hash => hash.replace('#', '')),
-      hashchange.map(ev => ev.newURL.match(/\#[^\#]*$/)[0].replace('#', ''))
-    ),
+    // A stream that provides the path whenever the route changes.
+    changeRoute$: History
+      .startWith({
+        pathname: '/',
+      })
+      .map(location => location.pathname),
+
+    // THE URL STREAM
+    // A stream of URL clicks in the app
+    url$: DOM
+      .select('a')
+      .events('click')
+      .filter(filterLinks)
+      .map(event =>  event.target.hash.replace('#', '')),
 
     // CLEAR INPUT STREAM
     // A stream of ESC key strokes in the `.new-todo` field.

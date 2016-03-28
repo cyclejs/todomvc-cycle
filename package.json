@@ -20,6 +20,7 @@
   "dependencies": {
     "@cycle/core": "6.0.0",
     "@cycle/dom": "8.1.0",
+    "@cycle/history": "^1.1.0",
     "@cycle/isolate": "1.2.x",
     "@cycle/storage": "^2.0.3",
     "rx": "4.0.7",
