@@ -87,7 +87,7 @@ function Todos({DOM, History, storage}) {
   // Write the virtual dom stream to the DOM and write the
   // storage stream to localStorage.
   return {
-    DOM: view(amendedState$).flatMapLatest(dom => Observable.fromCallback(requestAnimationFrame).map(dom)),
+    DOM: view(amendedState$).flatMapLatest(dom => Observable.fromCallback(requestAnimationFrame)().map(dom)),
     History: actions.url$,
     storage: storage$,
   };
