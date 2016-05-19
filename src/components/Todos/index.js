@@ -6,6 +6,7 @@ import view from './view';
 import deserialize from './storage-source';
 import serialize from './storage-sink';
 import TodoItem from '../TodoItem';
+import {batchUpdate} from '../../utils'
 
 // AMEND STATE WITH CHILDREN
 // This function creates the projection function
@@ -87,7 +88,7 @@ function Todos({DOM, History, storage}) {
   // Write the virtual dom stream to the DOM and write the
   // storage stream to localStorage.
   return {
-    DOM: view(amendedState$).flatMapLatest(dom => Observable.fromCallback(requestAnimationFrame)().map(dom)),
+    DOM: batchUpdate(view(amendedState$)),
     History: actions.url$,
     storage: storage$,
   };
