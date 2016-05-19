@@ -23,6 +23,7 @@
     "@cycle/history": "^1.1.0",
     "@cycle/isolate": "1.2.x",
     "@cycle/storage": "^2.0.3",
+    "raf": "^3.2.0",
     "rx": "4.0.7",
     "todomvc-app-css": "2.0.3",
     "todomvc-common": "1.0.1"
