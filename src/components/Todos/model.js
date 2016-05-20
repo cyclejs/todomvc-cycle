@@ -116,7 +116,7 @@ function model(actions, sourceTodosData$) {
   return sourceTodosData$
     .concat(modification$)
     .scan((todosData, modFn) => modFn(todosData))
-    // Make this a hot Observable with with
+    // Make this a hot Observable with
     // a replay buffer of one item.
     .shareReplay(1);
 }
