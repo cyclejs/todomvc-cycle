@@ -28,7 +28,7 @@ function intent(DOMSource) {
     // THE ENTER KEY ACTION STREAM
     DOMSource.select('.edit').events('keyup')
       .filter(ev => ev.keyCode === ENTER_KEY)
-      .merge(DOMSource.select('.edit').events('blur', true))
+      .compose(s => xs.merge(s, DOMSource.select('.edit').events('blur', true)))
       .map(ev => ({title: ev.target.value, type: 'doneEdit'}))
   );
 }

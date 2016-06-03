@@ -52,7 +52,7 @@ function TaskList(sources) {
   let sourceTodosData$ = deserialize(localStorage$);
   // THE PROXY ITEM ACTION STREAM
   // We create a stream as a proxy for all the actions from each task.
-  let proxyItemAction$ = xs.create();
+  let proxyItemAction$ = xs.createMimic();
   // THE INTENT (MVI PATTERN)
   // Pass relevant sources to the intent function, which set up
   // streams that model the users actions.

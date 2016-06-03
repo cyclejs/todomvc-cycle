@@ -18,15 +18,15 @@
     }
   ],
   "dependencies": {
-    "@cycle/dom": "10.0.0-rc22",
-    "@cycle/history": "^3.1.0",
+    "@cycle/dom": "10.0.0-rc28",
+    "@cycle/history": "^3.1.1",
     "@cycle/isolate": "1.2.x",
     "@cycle/storage": "3.0.0-rc2",
-    "@cycle/xstream-run": "1.1.0",
+    "@cycle/xstream-run": "2.0.0",
     "history": "^2.1.1",
     "todomvc-app-css": "2.0.3",
     "todomvc-common": "1.0.1",
-    "xstream": "^2.6.0"
+    "xstream": "^4.0.1"
   },
   "devDependencies": {
     "babel-plugin-transform-object-rest-spread": "^6.6.5",
