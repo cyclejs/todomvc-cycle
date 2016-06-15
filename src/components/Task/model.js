@@ -16,14 +16,12 @@ function model(props$, action$) {
     )
     .startWith(false);
 
-  return xs.combine(
-    ({title, completed}, editing) => ({
+  return xs.combine(sanitizedProps$, editing$)
+    .map(([{title, completed}, editing]) => ({
       title,
       isCompleted: completed,
       isEditing: editing,
-    }),
-    sanitizedProps$, editing$
-  );
+    }));
 }
 
 export default model;
