@@ -5,14 +5,15 @@ import view from './view';
 // THE TODO ITEM FUNCTION
 // This is a simple todo item component,
 // structured with the MVI-pattern.
-function Task({DOM, props$}) {
-  let action$ = intent(DOM);
-  let state$ = model(props$, action$);
+function Task(sources) {
+  let action$ = intent(sources);
+  let state$ = model(sources.props$, action$);
   let vtree$ = view(state$);
 
   return {
     DOM: vtree$,
     action$,
+    state$
   };
 }
 

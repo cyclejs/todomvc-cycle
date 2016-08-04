@@ -1,27 +1,60 @@
 import xs from 'xstream';
 
+function makeReducer$(action$) {
+  let startEditReducer$ = action$
+    .filter(action => action.type === 'startEdit')
+    .mapTo(function startEditReducer(data) {
+      return {
+        ...data,
+        editing: true
+      };
+    });
+
+  let doneEditReducer$ = action$
+    .filter(action => action.type === 'doneEdit')
+    .map(action => function doneEditReducer(data) {
+      return {
+        ...data,
+        title: action.payload,
+        editing: false
+      };
+    });
+
+  let cancelEditReducer$ = action$
+    .filter(action => action.type === 'cancelEdit')
+    .mapTo(function cancelEditReducer(data) {
+      return {
+        ...data,
+        editing: false
+      };
+    });
+
+  let toggleReducer$ = action$
+    .filter(action => action.type === 'toggle')
+    .map(action => function toggleReducer(data) {
+      return {
+        ...data,
+        completed: action.payload
+      };
+    });
+
+  return xs.merge(
+    startEditReducer$,
+    doneEditReducer$,
+    cancelEditReducer$,
+    toggleReducer$
+  );
+}
+
 function model(props$, action$) {
   // THE SANITIZED PROPERTIES
   // If the list item has no data set it as empty and not completed.
   let sanitizedProps$ = props$.startWith({title: '', completed: false});
+  let reducer$ = makeReducer$(action$);
 
-  // THE EDITING STREAM
-  // Create a stream that emits booleans that represent the
-  // "is editing" state.
-  let editing$ =
-    xs.merge(
-      action$.filter(a => a.type === 'startEdit').mapTo(true),
-      action$.filter(a => a.type === 'doneEdit').mapTo(false),
-      action$.filter(a => a.type === 'cancelEdit').mapTo(false)
-    )
-    .startWith(false);
-
-  return xs.combine(sanitizedProps$, editing$)
-    .map(([{title, completed}, editing]) => ({
-      title,
-      isCompleted: completed,
-      isEditing: editing,
-    }));
+  return sanitizedProps$.map(props =>
+    reducer$.fold((data, reducer) => reducer(data), props)
+  ).flatten().remember();
 }
 
 export default model;

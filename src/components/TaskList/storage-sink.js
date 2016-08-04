@@ -6,8 +6,7 @@ export default function serialize(todos$) {
       list: todosData.list.map(todoData =>
         ({
           title: todoData.title,
-          completed: todoData.completed,
-          id: todoData.id
+          completed: todoData.completed
         })
       )
     }

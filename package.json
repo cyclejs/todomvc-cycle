@@ -18,6 +18,7 @@
     }
   ],
   "dependencies": {
+    "@cycle/collection": "^0.3.0",
     "@cycle/dom": "10.0.0-rc33",
     "@cycle/history": "^4.0.0",
     "@cycle/isolate": "1.4.x",
