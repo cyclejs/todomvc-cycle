@@ -3,7 +3,7 @@
 export default function serialize(todos$) {
   return todos$.map(todosData => JSON.stringify(
     {
-      list: todosData.list.map(todoData =>
+      list: todosData.map(todoData =>
         ({
           title: todoData.title,
           completed: todoData.completed

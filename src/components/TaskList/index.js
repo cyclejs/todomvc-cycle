@@ -90,7 +90,7 @@ function TaskList(sources) {
   let vdom$ = view(amendedState$);
   // WRITE TO LOCALSTORAGE
   // The latest state is written to localStorage.
-  let storage$ = serialize(amendedState$).map((state) => ({
+  let storage$ = serialize(todoStates$).map((state) => ({
     key: 'todos-cycle', value: state
   }));
   // COMPLETE THE CYCLE
