@@ -37,9 +37,10 @@ function renderMainSection(todosData) {
 
 function renderFilterButton(todosData, filterTag, path, label) {
   return li([
-    todosData.filter === filterTag ?
-      a('.selected', {props: {href: path}}, label) :
-      a({props: {href: path}}, label)
+    a({
+      props: {href: path},
+      class: {selected: todosData.filter === filterTag}
+    }, label)
   ]);
 }
 

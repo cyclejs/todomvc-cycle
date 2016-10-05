@@ -1,16 +1,16 @@
 import {button, div, input, label, li} from '@cycle/dom';
 
 function view(state$) {
-  return state$.map(({title, isCompleted, isEditing}) => {
+  return state$.map(({title, completed, editing}) => {
     let todoRootClasses = {
-      completed: isCompleted,
-      editing: isEditing,
+      completed,
+      editing,
     };
 
     return li('.todoRoot', {class: todoRootClasses}, [
       div('.view', [
         input('.toggle', {
-          props: {type: 'checkbox', checked: isCompleted},
+          props: {type: 'checkbox', checked: completed},
         }),
         label(title),
         button('.destroy')
@@ -20,7 +20,7 @@ function view(state$) {
         hook: {
           update: (oldVNode, {elm}) => {
             elm.value = title;
-            if (isEditing) {
+            if (editing) {
               elm.focus();
               elm.selectionStart = elm.value.length;
             }

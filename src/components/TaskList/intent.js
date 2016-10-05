@@ -3,7 +3,7 @@ import dropRepeats from 'xstream/extra/dropRepeats';
 import {ENTER_KEY, ESC_KEY} from '../../utils';
 
 // THE INTENT FOR THE LIST
-export default function intent(DOMSource, History, itemAction$) {
+export default function intent(DOMSource, History) {
   return xs.merge(
     // THE ROUTE STREAM
     // A stream that provides the path whenever the route changes.
@@ -38,25 +38,11 @@ export default function intent(DOMSource, History, itemAction$) {
       .map(ev => String(ev.target.value).trim())
       .map(payload => ({type: 'insertTodo', payload})),
 
-    // TOGGLE STREAM
-    // Create a stream out of all the toggle actions on the todo items.
-    itemAction$.filter(action => action.type === 'toggle')
-      .map(action => ({...action, type: 'toggleTodo'})),
-
-    // DELETE STREAM
-    // Create a stream out of all the destroy actions on the todo items.
-    itemAction$.filter(action => action.type === 'destroy')
-      .map(action => ({...action, type: 'deleteTodo'})),
-
-    // EDIT STREAM
-    // Create a stream out of all the doneEdit actions on the todo items.
-    itemAction$.filter(action => action.type === 'doneEdit')
-      .map(action => ({...action, type: 'editTodo'})),
-
     // TOGGLE ALL STREAM
     // Create a stream out of the clicks on the `.toggle-all` button.
     DOMSource.select('.toggle-all').events('click')
-      .mapTo({type: 'toggleAll'}),
+      .map(ev => ev.target.checked)
+      .map(payload => ({type: 'toggleAll', payload})),
 
     // DELETE COMPLETED TODOS STREAM
     // A stream of click events on the `.clear-completed` element.
