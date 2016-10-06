@@ -1,13 +1,8 @@
 import {button, div, input, label, li} from '@cycle/dom';
 
-function view(state$) {
-  return state$.map(({title, completed, editing}) => {
-    let todoRootClasses = {
-      completed,
-      editing,
-    };
-
-    return li('.todoRoot', {class: todoRootClasses}, [
+export default function view(state$) {
+  return state$.map(({title, completed, editing}) =>
+    li('.todoRoot', {class: {completed, editing}}, [
       div('.view', [
         input('.toggle', {
           props: {type: 'checkbox', checked: completed},
@@ -27,8 +22,6 @@ function view(state$) {
           }
         }
       })
-    ]);
-  });
+    ])
+  );
 }
-
-export default view;

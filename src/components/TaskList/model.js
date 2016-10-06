@@ -1,8 +1,7 @@
 import xs from 'xstream';
 import concat from 'xstream/extra/concat';
+import flattenSequentially from 'xstream/extra/flattenSequentially';
 
-// A helper function that provides filter functions
-// depending on the route value.
 function getFilterFn(route) {
   switch (route) {
     case '/active': return (task => task.completed === false);
@@ -11,23 +10,18 @@ function getFilterFn(route) {
   }
 }
 
-// MAKE REDUCER STREAM
-// A function that takes the actions on the todo list
-// and returns a stream of "reducers": functions that expect the current
-// todosData (the state) and return a new version of todosData.
-function makeReducer$(action$) {
-  let clearInputReducer$ = action$
-    .filter(a => a.type === 'clearInput')
-    .mapTo(function clearInputReducer(todosData) {
-      return todosData;
+export default function model(action$, sourceTodosData$) {
+  const sourceTodosReducer$ = sourceTodosData$
+    .map(sourceTodos => function sourceTodosReducer(prevState) {
+      return sourceTodos;
     });
 
-  let changeRouteReducer$ = action$
-    .filter(a => a.type === 'changeRoute')
-    .map(a => a.payload)
+  const changeRouteReducer$ = action$
+    .filter(ac => ac.type === 'changeRoute')
+    .map(ac => ac.payload)
     .startWith('/')
     .map(path => {
-      let filterFn = getFilterFn(path);
+      const filterFn = getFilterFn(path);
       return function changeRouteReducer(todosData) {
         todosData.filter = path.replace('/', '').trim();
         todosData.filterFn = filterFn;
@@ -35,28 +29,54 @@ function makeReducer$(action$) {
       };
     });
 
+  const clearInputReducer$ = action$
+    .filter(ac => ac.type === 'cancelInput' || ac.type === 'insertTodo')
+    .map(ac => xs.of(true, false))
+    .compose(flattenSequentially)
+    .map(inputShouldClear => function clearInputReducer(prevState) {
+      return {...prevState, inputShouldClear};
+    });
+
+  const insertTodoReducer$ = action$
+    .filter(ac => ac.type === 'insertTodo')
+    .map(action => function insertTodoReducer(prevState) {
+      const newTodo = {
+        title: action.payload,
+        completed: false,
+        editing: false,
+      };
+      return {
+        ...prevState,
+        list: prevState.list.concat(newTodo),
+      }
+    });
+
+  const toggleAllReducer$ = action$
+    .filter(ac => ac.type === 'toggleAll')
+    .map(action => function toggleAllReducer(prevState) {
+      return {
+        ...prevState,
+        list: prevState.list.map(task =>
+          ({...task, completed: action.payload})
+        ),
+      }
+    });
+
+  const deleteCompletedReducer$ = action$
+    .filter(ac => ac.type === 'deleteCompleted')
+    .mapTo(function deleteCompletedsReducer(prevState) {
+      return {
+        ...prevState,
+        list: prevState.list.filter(task => task.completed === false),
+      };
+    });
+
   return xs.merge(
+    sourceTodosReducer$,
+    changeRouteReducer$,
     clearInputReducer$,
-    changeRouteReducer$
+    insertTodoReducer$,
+    toggleAllReducer$,
+    deleteCompletedReducer$
   );
 }
-
-// THIS IS THE MODEL FUNCTION
-// It expects the actions coming in from the sources
-function model(action$, sourceTodosData$) {
-  // THE BUSINESS LOGIC
-  // Actions are passed to the `makeReducer$` function
-  // which creates a stream of reducer functions that needs
-  // to be applied on the todoData when an action happens.
-  let reducer$ = makeReducer$(action$);
-
-  // RETURN THE MODEL DATA
-  return sourceTodosData$.map(sourceTodosData =>
-    reducer$.fold((todosData, reducer) => reducer(todosData), sourceTodosData)
-  ).flatten()
-  // Make this remember its latest event, so late listeners
-  // will be updated with the latest state.
-  .remember();
-}
-
-export default model;

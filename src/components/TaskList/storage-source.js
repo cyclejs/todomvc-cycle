@@ -11,9 +11,11 @@ function merge() {
   return result;
 }
 
-let safeJSONParse = str => JSON.parse(str) || {};
+function safeJSONParse(str) {
+  return JSON.parse(str) || {};
+}
 
-let mergeWithDefaultTodosData = todosData => {
+function mergeWithDefaultTodosData(todosData) {
   return merge({
     list: [],
     filter: '',

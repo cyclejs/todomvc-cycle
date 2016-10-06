@@ -1,7 +1,9 @@
-import {a, button, div, footer, h1, header, input, li,
-        section, span, strong, ul} from '@cycle/dom';
+import xs from 'xstream';
+import {
+  a, button, div, footer, h1, header, input, li, section, span, strong, ul
+} from '@cycle/dom';
 
-function renderHeader() {
+function renderHeader(viewState) {
   return header('.header', [
     h1('todos'),
     input('.new-todo', {
@@ -13,43 +15,42 @@ function renderHeader() {
       },
       hook: {
         update: (oldVNode, {elm}) => {
-          elm.value = '';
+          if (viewState.inputShouldClear) {
+            elm.value = '';
+          }
         },
       },
     })
   ]);
 }
 
-function renderMainSection(todosData) {
-  let allCompleted = todosData.list.reduce((x, y) => x && y.completed, true);
-  let sectionStyle = {'display': todosData.list.length ? '' : 'none'};
+function renderMainSection(viewState) {
+  const allCompleted = viewState.list.reduce((x, y) => x && y.completed, true);
+  const sectionStyle = {'display': viewState.list.length ? '' : 'none'};
 
   return section('.main', {style: sectionStyle}, [
     input('.toggle-all', {
       props: {type: 'checkbox', checked: allCompleted},
     }),
-    ul('.todo-list', todosData.list
-      .filter(todosData.filterFn)
-      .map(data => data.todoItem.DOM)
-    )
+    ul('.todo-list', viewState.taskVNodes)
   ]);
 }
 
-function renderFilterButton(todosData, filterTag, path, label) {
+function renderFilterButton(state, filterTag, path, label) {
   return li([
     a({
-      props: {href: path},
-      class: {selected: todosData.filter === filterTag}
+      attrs: {href: path},
+      class: {selected: state.filter === filterTag}
     }, label)
   ]);
 }
 
-function renderFooter(todosData) {
-  let amountCompleted = todosData.list
-    .filter(todoData => todoData.completed)
+function renderFooter(state) {
+  const amountCompleted = state.list
+    .filter(state => state.completed)
     .length;
-  let amountActive = todosData.list.length - amountCompleted;
-  let footerStyle = {'display': todosData.list.length ? '' : 'none'};
+  const amountActive = state.list.length - amountCompleted;
+  const footerStyle = {'display': state.list.length ? '' : 'none'};
 
   return footer('.footer', {style: footerStyle}, [
     span('.todo-count', [
@@ -57,9 +58,9 @@ function renderFooter(todosData) {
       ' item' + (amountActive !== 1 ? 's' : '') + ' left'
     ]),
     ul('.filters', [
-      renderFilterButton(todosData, '', '/', 'All'),
-      renderFilterButton(todosData, 'active', '/active', 'Active'),
-      renderFilterButton(todosData, 'completed', '/completed', 'Completed'),
+      renderFilterButton(state, '', '/', 'All'),
+      renderFilterButton(state, 'active', '/active', 'Active'),
+      renderFilterButton(state, 'completed', '/completed', 'Completed'),
     ]),
     (amountCompleted > 0 ?
       button('.clear-completed', 'Clear completed (' + amountCompleted + ')')
@@ -68,17 +69,12 @@ function renderFooter(todosData) {
   ])
 }
 
-// THE VIEW
-// This function expects the stream of todosData
-// from the model function and turns it into a
-// virtual DOM stream that is then ultimately returned into
-// the DOM sink in the index.js.
-export default function view(todos$) {
-  return todos$.map(todos =>
+export default function view(viewState$) {
+  return viewState$.map(viewState =>
     div([
-      renderHeader(),
-      renderMainSection(todos),
-      renderFooter(todos)
+      renderHeader(viewState),
+      renderMainSection(viewState),
+      renderFooter(viewState)
     ])
   );
 };

@@ -1,9 +1,7 @@
-// Turn the data object that contains
-// the todos into a string for localStorage.
-export default function serialize(todos$) {
-  return todos$.map(todosData => JSON.stringify(
+export default function serialize(state$) {
+  return state$.map(state => JSON.stringify(
     {
-      list: todosData.map(todoData =>
+      list: state.list.map(todoData =>
         ({
           title: todoData.title,
           completed: todoData.completed
