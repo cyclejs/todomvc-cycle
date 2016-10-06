@@ -36,21 +36,21 @@ function renderMainSection(viewState) {
   ]);
 }
 
-function renderFilterButton(state, filterTag, path, label) {
+function renderFilterButton(viewState, filterTag, path, label) {
   return li([
     a({
       attrs: {href: path},
-      class: {selected: state.filter === filterTag}
+      class: {selected: viewState.filter === filterTag}
     }, label)
   ]);
 }
 
-function renderFooter(state) {
-  const amountCompleted = state.list
-    .filter(state => state.completed)
+function renderFooter(viewState) {
+  const amountCompleted = viewState.list
+    .filter(viewState => viewState.completed)
     .length;
-  const amountActive = state.list.length - amountCompleted;
-  const footerStyle = {'display': state.list.length ? '' : 'none'};
+  const amountActive = viewState.list.length - amountCompleted;
+  const footerStyle = {'display': viewState.list.length ? '' : 'none'};
 
   return footer('.footer', {style: footerStyle}, [
     span('.todo-count', [
@@ -58,9 +58,9 @@ function renderFooter(state) {
       ' item' + (amountActive !== 1 ? 's' : '') + ' left'
     ]),
     ul('.filters', [
-      renderFilterButton(state, '', '/', 'All'),
-      renderFilterButton(state, 'active', '/active', 'Active'),
-      renderFilterButton(state, 'completed', '/completed', 'Completed'),
+      renderFilterButton(viewState, '', '/', 'All'),
+      renderFilterButton(viewState, 'active', '/active', 'Active'),
+      renderFilterButton(viewState, 'completed', '/completed', 'Completed'),
     ]),
     (amountCompleted > 0 ?
       button('.clear-completed', 'Clear completed (' + amountCompleted + ')')

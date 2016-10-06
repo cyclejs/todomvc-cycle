@@ -22,10 +22,11 @@ function Children(sources) {
     .compose(pick(sinks => sinks.onion))
     .compose(mix(xs.merge));
 
-  return {
+  const sinks = {
     vnodes: vnodes$,
     onion: reducer$,
   }
+  return sinks;
 }
 
 function viewModel(state$, taskVNodes$) {

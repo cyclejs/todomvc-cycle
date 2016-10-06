@@ -6,10 +6,11 @@ export default function Task(sources) {
   const state$ = sources.onion.state$;
   const action$ = intent(sources.DOM);
   const reducer$ = model(action$);
-  const vtree$ = view(state$);
+  const vdom$ = view(state$);
 
-  return {
-    DOM: vtree$,
+  const sinks = {
+    DOM: vdom$,
     onion: reducer$,
   };
+  return sinks;
 }
