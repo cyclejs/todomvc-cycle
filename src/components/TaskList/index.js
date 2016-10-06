@@ -32,7 +32,7 @@ function Children(sources) {
 export default function TaskList(sources) {
   const localStorage$ = sources.storage.local.getItem('todos-cycle').take(1);
   const sourceTodosData$ = deserialize(localStorage$);
-  const state$ = sources.onion.state$.debug('state');
+  const state$ = sources.onion.state$;
   const action$ = intent(sources.DOM, sources.history);
   const parentReducer$ = model(action$, sourceTodosData$);
 
