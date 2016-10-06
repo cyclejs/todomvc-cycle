@@ -1,4 +1,3 @@
-import xs from 'xstream';
 import {
   a, button, div, footer, h1, header, input, li, section, span, strong, ul
 } from '@cycle/dom';

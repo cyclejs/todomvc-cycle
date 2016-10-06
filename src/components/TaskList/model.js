@@ -1,5 +1,4 @@
 import xs from 'xstream';
-import concat from 'xstream/extra/concat';
 import flattenSequentially from 'xstream/extra/flattenSequentially';
 
 function getFilterFn(route) {
