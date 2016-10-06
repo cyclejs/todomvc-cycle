@@ -146,7 +146,7 @@ var BodyDOMSource = (function () {
 }());
 exports.BodyDOMSource = BodyDOMSource;
 
-},{"./fromEvent":10,"@cycle/xstream-adapter":33,"xstream":164}],3:[function(require,module,exports){
+},{"./fromEvent":10,"@cycle/xstream-adapter":33,"xstream":163}],3:[function(require,module,exports){
 "use strict";
 var xstream_1 = require('xstream');
 var xstream_adapter_1 = require('@cycle/xstream-adapter');
@@ -183,7 +183,7 @@ var DocumentDOMSource = (function () {
 }());
 exports.DocumentDOMSource = DocumentDOMSource;
 
-},{"./fromEvent":10,"@cycle/xstream-adapter":33,"xstream":164}],4:[function(require,module,exports){
+},{"./fromEvent":10,"@cycle/xstream-adapter":33,"xstream":163}],4:[function(require,module,exports){
 "use strict";
 var ScopeChecker_1 = require('./ScopeChecker');
 var utils_1 = require('./utils');
@@ -389,7 +389,7 @@ var HTMLSource = (function () {
 }());
 exports.HTMLSource = HTMLSource;
 
-},{"@cycle/xstream-adapter":33,"xstream":164}],7:[function(require,module,exports){
+},{"@cycle/xstream-adapter":33,"xstream":163}],7:[function(require,module,exports){
 "use strict";
 var xstream_adapter_1 = require('@cycle/xstream-adapter');
 var DocumentDOMSource_1 = require('./DocumentDOMSource');
@@ -580,7 +580,7 @@ var MainDOMSource = (function () {
 }());
 exports.MainDOMSource = MainDOMSource;
 
-},{"./BodyDOMSource":2,"./DocumentDOMSource":3,"./ElementFinder":4,"./EventDelegator":5,"./fromEvent":10,"./isolate":14,"./utils":21,"@cycle/xstream-adapter":33,"matches-selector":129,"xstream":164}],8:[function(require,module,exports){
+},{"./BodyDOMSource":2,"./DocumentDOMSource":3,"./ElementFinder":4,"./EventDelegator":5,"./fromEvent":10,"./isolate":14,"./utils":21,"@cycle/xstream-adapter":33,"matches-selector":129,"xstream":163}],8:[function(require,module,exports){
 "use strict";
 var ScopeChecker = (function () {
     function ScopeChecker(scope, isolateModule) {
@@ -655,7 +655,7 @@ function fromEvent(element, eventName, useCapture) {
 }
 exports.fromEvent = fromEvent;
 
-},{"xstream":164}],11:[function(require,module,exports){
+},{"xstream":163}],11:[function(require,module,exports){
 "use strict";
 var hyperscript_1 = require('./hyperscript');
 function isValidString(param) {
@@ -1268,7 +1268,7 @@ function makeDOMDriver(container, options) {
 }
 exports.makeDOMDriver = makeDOMDriver;
 
-},{"./MainDOMSource":7,"./VNodeWrapper":9,"./isolateModule":15,"./modules":19,"./transposition":20,"./utils":21,"@cycle/xstream-adapter":33,"es6-map":78,"snabbdom":151,"xstream":164}],17:[function(require,module,exports){
+},{"./MainDOMSource":7,"./VNodeWrapper":9,"./isolateModule":15,"./modules":19,"./transposition":20,"./utils":21,"@cycle/xstream-adapter":33,"es6-map":78,"snabbdom":151,"xstream":163}],17:[function(require,module,exports){
 "use strict";
 var xstream_adapter_1 = require('@cycle/xstream-adapter');
 var transposition_1 = require('./transposition');
@@ -1370,7 +1370,7 @@ function mockDOMSource(streamAdapter, mockConfig) {
 }
 exports.mockDOMSource = mockDOMSource;
 
-},{"@cycle/xstream-adapter":33,"xstream":164}],19:[function(require,module,exports){
+},{"@cycle/xstream-adapter":33,"xstream":163}],19:[function(require,module,exports){
 "use strict";
 var ClassModule = require('snabbdom/modules/class');
 exports.ClassModule = ClassModule;
@@ -1435,7 +1435,7 @@ function makeTransposeVNode(runStreamAdapter) {
 }
 exports.makeTransposeVNode = makeTransposeVNode;
 
-},{"@cycle/xstream-adapter":33,"xstream":164}],21:[function(require,module,exports){
+},{"@cycle/xstream-adapter":33,"xstream":163}],21:[function(require,module,exports){
 "use strict";
 function isElement(obj) {
     return typeof HTMLElement === "object" ?
@@ -1999,7 +1999,7 @@ function getResponseObj(request$, runSA) {
     }
   };
 }
-},{"@cycle/xstream-adapter":32,"xstream/extra/dropRepeats":161}],31:[function(require,module,exports){
+},{"@cycle/xstream-adapter":32,"xstream/extra/dropRepeats":160}],31:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -2100,7 +2100,7 @@ var XStreamAdapter = {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.default = XStreamAdapter;
 
-},{"xstream":164}],33:[function(require,module,exports){
+},{"xstream":163}],33:[function(require,module,exports){
 "use strict";
 var xstream_1 = require('xstream');
 var XStreamAdapter = {
@@ -2146,7 +2146,7 @@ var XStreamAdapter = {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.default = XStreamAdapter;
 
-},{"xstream":164}],34:[function(require,module,exports){
+},{"xstream":163}],34:[function(require,module,exports){
 "use strict";
 var base_1 = require('@cycle/base');
 var xstream_adapter_1 = require('@cycle/xstream-adapter');
@@ -2421,7 +2421,7 @@ function onionify(main, name) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.default = onionify;
 
-},{"xstream":164}],37:[function(require,module,exports){
+},{"xstream":163}],37:[function(require,module,exports){
 'use strict';
 
 var copy       = require('es5-ext/object/copy')
@@ -11155,103 +11155,6 @@ exports.default = Stream;
 },{"symbol-observable":155}],160:[function(require,module,exports){
 "use strict";
 var core_1 = require('../core');
-var ConcatProducer = (function () {
-    function ConcatProducer(streams) {
-        this.streams = streams;
-        this.type = 'concat';
-        this.out = null;
-        this.i = 0;
-    }
-    ConcatProducer.prototype._start = function (out) {
-        this.out = out;
-        this.streams[this.i]._add(this);
-    };
-    ConcatProducer.prototype._stop = function () {
-        var streams = this.streams;
-        if (this.i < streams.length) {
-            streams[this.i]._remove(this);
-        }
-        this.i = 0;
-        this.out = null;
-    };
-    ConcatProducer.prototype._n = function (t) {
-        var u = this.out;
-        if (!u)
-            return;
-        u._n(t);
-    };
-    ConcatProducer.prototype._e = function (err) {
-        var u = this.out;
-        if (!u)
-            return;
-        u._e(err);
-    };
-    ConcatProducer.prototype._c = function () {
-        var u = this.out;
-        if (!u)
-            return;
-        var streams = this.streams;
-        streams[this.i]._remove(this);
-        if (++this.i < streams.length) {
-            streams[this.i]._add(this);
-        }
-        else {
-            u._c();
-        }
-    };
-    return ConcatProducer;
-}());
-/**
- * Puts one stream after the other. *concat* is a factory that takes multiple
- * streams as arguments, and starts the `n+1`-th stream only when the `n`-th
- * stream has completed. It concatenates those streams together.
- *
- * Marble diagram:
- *
- * ```text
- * --1--2---3---4-|
- * ...............--a-b-c--d-|
- *           concat
- * --1--2---3---4---a-b-c--d-|
- * ```
- *
- * Example:
- *
- * ```js
- * import concat from 'xstream/extra/concat'
- *
- * const streamA = xs.of('a', 'b', 'c')
- * const streamB = xs.of(10, 20, 30)
- * const streamC = xs.of('X', 'Y', 'Z')
- *
- * const outputStream = concat(streamA, streamB, streamC)
- *
- * outputStream.addListener({
- *   next: (x) => console.log(x),
- *   error: (err) => console.error(err),
- *   complete: () => console.log('concat completed'),
- * })
- * ```
- *
- * @factory true
- * @param {Stream} stream1 A stream to concatenate together with other streams.
- * @param {Stream} stream2 A stream to concatenate together with other streams. Two
- * or more streams may be given as arguments.
- * @return {Stream}
- */
-function concat() {
-    var streams = [];
-    for (var _i = 0; _i < arguments.length; _i++) {
-        streams[_i - 0] = arguments[_i];
-    }
-    return new core_1.Stream(new ConcatProducer(streams));
-}
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.default = concat;
-
-},{"../core":159}],161:[function(require,module,exports){
-"use strict";
-var core_1 = require('../core');
 var empty = {};
 var DropRepeatsOperator = (function () {
     function DropRepeatsOperator(fn, ins) {
@@ -11372,7 +11275,7 @@ function dropRepeats(isEqual) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.default = dropRepeats;
 
-},{"../core":159}],162:[function(require,module,exports){
+},{"../core":159}],161:[function(require,module,exports){
 "use strict";
 var core_1 = require('../core');
 var FSInner = (function () {
@@ -11484,7 +11387,7 @@ function flattenSequentially(ins) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.default = flattenSequentially;
 
-},{"../core":159}],163:[function(require,module,exports){
+},{"../core":159}],162:[function(require,module,exports){
 "use strict";
 var core_1 = require('../core');
 var NO = {};
@@ -11660,7 +11563,7 @@ sampleCombine = function sampleCombine() {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.default = sampleCombine;
 
-},{"../core":159}],164:[function(require,module,exports){
+},{"../core":159}],163:[function(require,module,exports){
 "use strict";
 var core_1 = require('./core');
 exports.Stream = core_1.Stream;
@@ -11668,7 +11571,7 @@ exports.MemoryStream = core_1.MemoryStream;
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.default = core_1.Stream;
 
-},{"./core":159}],165:[function(require,module,exports){
+},{"./core":159}],164:[function(require,module,exports){
 'use strict';
 
 var _xstreamRun = require('@cycle/xstream-run');
@@ -11701,7 +11604,7 @@ var main = (0, _cycleOnionify2.default)(_index2.default);
   storage: _storage2.default
 });
 
-},{"./components/TaskList/index":170,"@cycle/dom":13,"@cycle/history":23,"@cycle/storage":28,"@cycle/xstream-run":34,"cycle-onionify":36,"history":104}],166:[function(require,module,exports){
+},{"./components/TaskList/index":169,"@cycle/dom":13,"@cycle/history":23,"@cycle/storage":28,"@cycle/xstream-run":34,"cycle-onionify":36,"history":104}],165:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -11727,15 +11630,16 @@ function Task(sources) {
   var state$ = sources.onion.state$;
   var action$ = (0, _intent2.default)(sources.DOM);
   var reducer$ = (0, _model2.default)(action$);
-  var vtree$ = (0, _view2.default)(state$);
+  var vdom$ = (0, _view2.default)(state$);
 
-  return {
-    DOM: vtree$,
+  var sinks = {
+    DOM: vdom$,
     onion: reducer$
   };
+  return sinks;
 }
 
-},{"./intent":167,"./model":168,"./view":169}],167:[function(require,module,exports){
+},{"./intent":166,"./model":167,"./view":168}],166:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -11777,7 +11681,7 @@ function intent(domSource) {
   return _xstream2.default.merge(startEditAction$, doneEditAction$, cancelEditAction$, toggleAction$, destroyAction$);
 }
 
-},{"../../utils":176,"xstream":164}],168:[function(require,module,exports){
+},{"../../utils":176,"xstream":163}],167:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -11834,7 +11738,7 @@ function model(action$) {
   return _xstream2.default.merge(startEditReducer$, doneEditReducer$, cancelEditReducer$, toggleReducer$, destroyReducer$);
 }
 
-},{"xstream":164}],169:[function(require,module,exports){
+},{"xstream":163}],168:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -11868,42 +11772,21 @@ function view(state$) {
   });
 }
 
-},{"@cycle/dom":13}],170:[function(require,module,exports){
+},{"@cycle/dom":13}],169:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-
-var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
-
-var _slicedToArray = function () { function sliceIterator(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"]) _i["return"](); } finally { if (_d) throw _e; } } return _arr; } return function (arr, i) { if (Array.isArray(arr)) { return arr; } else if (Symbol.iterator in Object(arr)) { return sliceIterator(arr, i); } else { throw new TypeError("Invalid attempt to destructure non-iterable instance"); } }; }();
-
 exports.default = TaskList;
 
 var _xstream = require('xstream');
 
 var _xstream2 = _interopRequireDefault(_xstream);
 
-var _sampleCombine = require('xstream/extra/sampleCombine');
-
-var _sampleCombine2 = _interopRequireDefault(_sampleCombine);
-
 var _isolate = require('@cycle/isolate');
 
 var _isolate2 = _interopRequireDefault(_isolate);
-
-var _intent = require('./intent');
-
-var _intent2 = _interopRequireDefault(_intent);
-
-var _model = require('./model');
-
-var _model2 = _interopRequireDefault(_model);
-
-var _view = require('./view');
-
-var _view2 = _interopRequireDefault(_view);
 
 var _cycleOnionify = require('cycle-onionify');
 
@@ -11914,6 +11797,22 @@ var _storageSource2 = _interopRequireDefault(_storageSource);
 var _storageSink = require('./storage-sink');
 
 var _storageSink2 = _interopRequireDefault(_storageSink);
+
+var _intent = require('./intent');
+
+var _intent2 = _interopRequireDefault(_intent);
+
+var _model = require('./model');
+
+var _model2 = _interopRequireDefault(_model);
+
+var _viewModel = require('./view-model');
+
+var _viewModel2 = _interopRequireDefault(_viewModel);
+
+var _view = require('./view');
+
+var _view2 = _interopRequireDefault(_view);
 
 var _index = require('../Task/index');
 
@@ -11936,42 +11835,24 @@ function Children(sources) {
     return sinks.onion;
   })).compose((0, _cycleOnionify.mix)(_xstream2.default.merge));
 
-  return {
+  var sinks = {
     vnodes: vnodes$,
     onion: reducer$
   };
-}
-
-function viewModel(state$, taskVNodes$) {
-  return taskVNodes$.compose((0, _sampleCombine2.default)(state$)).map(function (_ref) {
-    var _ref2 = _slicedToArray(_ref, 2);
-
-    var taskVNodes = _ref2[0];
-    var state = _ref2[1];
-
-    var visibleVNodes = state.list.map(function (task, i) {
-      return state.filterFn(task) ? taskVNodes[i] : null;
-    }).filter(function (vnode) {
-      return vnode !== null;
-    });
-
-    return _extends({}, state, {
-      taskVNodes: visibleVNodes
-    });
-  });
+  return sinks;
 }
 
 function TaskList(sources) {
   var localStorage$ = sources.storage.local.getItem('todos-cycle').take(1);
   var sourceTodosData$ = (0, _storageSource2.default)(localStorage$);
-  var state$ = sources.onion.state$.debug('state');
+  var state$ = sources.onion.state$;
   var action$ = (0, _intent2.default)(sources.DOM, sources.history);
   var parentReducer$ = (0, _model2.default)(action$, sourceTodosData$);
 
   var childrenSinks = (0, _isolate2.default)(Children, 'list')(sources);
   var childrenVNodes$ = childrenSinks.vnodes;
   var childrenReducer$ = childrenSinks.onion;
-  var viewState$ = viewModel(state$, childrenVNodes$);
+  var viewState$ = (0, _viewModel2.default)(state$, childrenVNodes$);
 
   var vdom$ = (0, _view2.default)(viewState$);
   var reducer$ = _xstream2.default.merge(parentReducer$, childrenReducer$);
@@ -11987,7 +11868,7 @@ function TaskList(sources) {
   return sinks;
 }
 
-},{"../Task/index":166,"./intent":171,"./model":172,"./storage-sink":173,"./storage-source":174,"./view":175,"@cycle/isolate":27,"cycle-onionify":36,"xstream":164,"xstream/extra/sampleCombine":163}],171:[function(require,module,exports){
+},{"../Task/index":165,"./intent":170,"./model":171,"./storage-sink":172,"./storage-source":173,"./view":175,"./view-model":174,"@cycle/isolate":27,"cycle-onionify":36,"xstream":163}],170:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -12040,7 +11921,7 @@ function intent(domSource, historySource) {
   return _xstream2.default.merge(changeRouteAction$, cancelInputAction$, insertTodoAction$, toggleAllAction$, deleteCompletedAction$);
 };
 
-},{"../../utils":176,"xstream":164,"xstream/extra/dropRepeats":161}],172:[function(require,module,exports){
+},{"../../utils":176,"xstream":163,"xstream/extra/dropRepeats":160}],171:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -12054,10 +11935,6 @@ exports.default = model;
 var _xstream = require('xstream');
 
 var _xstream2 = _interopRequireDefault(_xstream);
-
-var _concat = require('xstream/extra/concat');
-
-var _concat2 = _interopRequireDefault(_concat);
 
 var _flattenSequentially = require('xstream/extra/flattenSequentially');
 
@@ -12152,7 +12029,7 @@ function model(action$, sourceTodosData$) {
   return _xstream2.default.merge(sourceTodosReducer$, changeRouteReducer$, clearInputReducer$, insertTodoReducer$, toggleAllReducer$, deleteCompletedReducer$);
 }
 
-},{"xstream":164,"xstream/extra/concat":160,"xstream/extra/flattenSequentially":162}],173:[function(require,module,exports){
+},{"xstream":163,"xstream/extra/flattenSequentially":161}],172:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -12172,7 +12049,7 @@ function serialize(state$) {
   });
 };
 
-},{}],174:[function(require,module,exports){
+},{}],173:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -12211,7 +12088,45 @@ function deserialize(localStorageValue$) {
   return localStorageValue$.map(safeJSONParse).map(mergeWithDefaultTodosData);
 };
 
-},{}],175:[function(require,module,exports){
+},{}],174:[function(require,module,exports){
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
+
+var _slicedToArray = function () { function sliceIterator(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"]) _i["return"](); } finally { if (_d) throw _e; } } return _arr; } return function (arr, i) { if (Array.isArray(arr)) { return arr; } else if (Symbol.iterator in Object(arr)) { return sliceIterator(arr, i); } else { throw new TypeError("Invalid attempt to destructure non-iterable instance"); } }; }();
+
+exports.default = viewModel;
+
+var _sampleCombine = require('xstream/extra/sampleCombine');
+
+var _sampleCombine2 = _interopRequireDefault(_sampleCombine);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function viewModel(state$, taskVNodes$) {
+  return taskVNodes$.compose((0, _sampleCombine2.default)(state$)).map(function (_ref) {
+    var _ref2 = _slicedToArray(_ref, 2);
+
+    var taskVNodes = _ref2[0];
+    var state = _ref2[1];
+
+    var visibleVNodes = state.list.map(function (task, i) {
+      return state.filterFn(task) ? taskVNodes[i] : null;
+    }).filter(function (vnode) {
+      return vnode !== null;
+    });
+
+    return _extends({}, state, {
+      taskVNodes: visibleVNodes
+    });
+  });
+}
+
+},{"xstream/extra/sampleCombine":162}],175:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -12219,13 +12134,7 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.default = view;
 
-var _xstream = require('xstream');
-
-var _xstream2 = _interopRequireDefault(_xstream);
-
 var _dom = require('@cycle/dom');
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 function renderHeader(viewState) {
   return (0, _dom.header)('.header', [(0, _dom.h1)('todos'), (0, _dom.input)('.new-todo', {
@@ -12258,21 +12167,21 @@ function renderMainSection(viewState) {
   }), (0, _dom.ul)('.todo-list', viewState.taskVNodes)]);
 }
 
-function renderFilterButton(state, filterTag, path, label) {
+function renderFilterButton(viewState, filterTag, path, label) {
   return (0, _dom.li)([(0, _dom.a)({
     attrs: { href: path },
-    class: { selected: state.filter === filterTag }
+    class: { selected: viewState.filter === filterTag }
   }, label)]);
 }
 
-function renderFooter(state) {
-  var amountCompleted = state.list.filter(function (state) {
-    return state.completed;
+function renderFooter(viewState) {
+  var amountCompleted = viewState.list.filter(function (viewState) {
+    return viewState.completed;
   }).length;
-  var amountActive = state.list.length - amountCompleted;
-  var footerStyle = { 'display': state.list.length ? '' : 'none' };
+  var amountActive = viewState.list.length - amountCompleted;
+  var footerStyle = { 'display': viewState.list.length ? '' : 'none' };
 
-  return (0, _dom.footer)('.footer', { style: footerStyle }, [(0, _dom.span)('.todo-count', [(0, _dom.strong)(String(amountActive)), ' item' + (amountActive !== 1 ? 's' : '') + ' left']), (0, _dom.ul)('.filters', [renderFilterButton(state, '', '/', 'All'), renderFilterButton(state, 'active', '/active', 'Active'), renderFilterButton(state, 'completed', '/completed', 'Completed')]), amountCompleted > 0 ? (0, _dom.button)('.clear-completed', 'Clear completed (' + amountCompleted + ')') : null]);
+  return (0, _dom.footer)('.footer', { style: footerStyle }, [(0, _dom.span)('.todo-count', [(0, _dom.strong)(String(amountActive)), ' item' + (amountActive !== 1 ? 's' : '') + ' left']), (0, _dom.ul)('.filters', [renderFilterButton(viewState, '', '/', 'All'), renderFilterButton(viewState, 'active', '/active', 'Active'), renderFilterButton(viewState, 'completed', '/completed', 'Completed')]), amountCompleted > 0 ? (0, _dom.button)('.clear-completed', 'Clear completed (' + amountCompleted + ')') : null]);
 }
 
 function view(viewState$) {
@@ -12281,7 +12190,7 @@ function view(viewState$) {
   });
 };
 
-},{"@cycle/dom":13,"xstream":164}],176:[function(require,module,exports){
+},{"@cycle/dom":13}],176:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -12293,4 +12202,4 @@ var ESC_KEY = 27;
 exports.ENTER_KEY = ENTER_KEY;
 exports.ESC_KEY = ESC_KEY;
 
-},{}]},{},[165]);
+},{}]},{},[164]);
