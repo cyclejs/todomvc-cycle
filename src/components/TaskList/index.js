@@ -1,8 +1,8 @@
 import xs from 'xstream';
-import sampleCombine from 'xstream/extra/sampleCombine';
-import isolate from '@cycle/isolate'
+import isolate from '@cycle/isolate';
 import intent from './intent';
 import model from './model';
+import viewModel from './view-model';
 import view from './view';
 import {pick, mix} from 'cycle-onionify';
 import deserialize from './storage-source';
@@ -27,20 +27,6 @@ function Children(sources) {
     onion: reducer$,
   }
   return sinks;
-}
-
-function viewModel(state$, taskVNodes$) {
-  return taskVNodes$.compose(sampleCombine(state$))
-    .map(([taskVNodes, state]) => {
-      const visibleVNodes = state.list
-        .map((task, i) => state.filterFn(task) ? taskVNodes[i] : null)
-        .filter(vnode => vnode !== null);
-
-      return {
-        ...state,
-        taskVNodes: visibleVNodes,
-      };
-    });
 }
 
 export default function TaskList(sources) {
