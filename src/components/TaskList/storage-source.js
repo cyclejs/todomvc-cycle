@@ -17,6 +17,7 @@ function safeJSONParse(str) {
 
 function mergeWithDefaultTodosData(todosData) {
   return merge({
+    inputValue: '',
     list: [],
     filter: '',
     filterFn: () => true, // allow anything

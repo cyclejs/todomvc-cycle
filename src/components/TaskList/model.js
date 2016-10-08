@@ -1,5 +1,4 @@
 import xs from 'xstream';
-import flattenSequentially from 'xstream/extra/flattenSequentially';
 
 function getFilterFn(route) {
   switch (route) {
@@ -28,12 +27,16 @@ export default function model(action$, sourceTodosData$) {
       };
     });
 
+  const updateInputValueReducer$ = action$
+    .filter(ac => ac.type === 'updateInputValue')
+    .map(action => function updateInputValue(prevState) {
+      return {...prevState, inputValue: action.payload};
+    });
+
   const clearInputReducer$ = action$
     .filter(ac => ac.type === 'cancelInput' || ac.type === 'insertTodo')
-    .map(ac => xs.of(true, false))
-    .compose(flattenSequentially)
-    .map(inputShouldClear => function clearInputReducer(prevState) {
-      return {...prevState, inputShouldClear};
+    .map(() => function clearInputReducer(prevState) {
+      return {...prevState, inputValue: ''};
     });
 
   const insertTodoReducer$ = action$
@@ -72,6 +75,7 @@ export default function model(action$, sourceTodosData$) {
 
   return xs.merge(
     sourceTodosReducer$,
+    updateInputValueReducer$,
     changeRouteReducer$,
     clearInputReducer$,
     insertTodoReducer$,

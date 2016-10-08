@@ -10,15 +10,9 @@ function renderHeader(viewState) {
         type: 'text',
         placeholder: 'What needs to be done?',
         autofocus: true,
-        name: 'newTodo'
-      },
-      hook: {
-        update: (oldVNode, {elm}) => {
-          if (viewState.inputShouldClear) {
-            elm.value = '';
-          }
-        },
-      },
+        name: 'newTodo',
+        value: viewState.inputValue
+      }
     })
   ]);
 }
