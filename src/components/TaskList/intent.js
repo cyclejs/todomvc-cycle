@@ -8,6 +8,11 @@ export default function intent(domSource, historySource) {
     .compose(dropRepeats())
     .map(payload => ({type: 'changeRoute', payload}));
 
+  const updateInputValueAction$ = domSource
+    .select('.new-todo').events('input')
+    .map(ev => ev.target.value)
+    .map(payload => ({type: 'updateInputValue', payload}));
+
   const cancelInputAction$ = domSource
     .select('.new-todo').events('keydown')
     .filter(ev => ev.keyCode === ESC_KEY)
@@ -33,6 +38,7 @@ export default function intent(domSource, historySource) {
 
   return xs.merge(
     changeRouteAction$,
+    updateInputValueAction$,
     cancelInputAction$,
     insertTodoAction$,
     toggleAllAction$,
