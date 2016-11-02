@@ -11618,7 +11618,7 @@ function intent(domSource) {
   return _xstream2.default.merge(startEditAction$, doneEditAction$, cancelEditAction$, toggleAction$, destroyAction$);
 }
 
-},{"../../utils":176,"xstream":163}],167:[function(require,module,exports){
+},{"../../utils":174,"xstream":163}],167:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -11727,14 +11727,6 @@ var _isolate2 = _interopRequireDefault(_isolate);
 
 var _cycleOnionify = require('cycle-onionify');
 
-var _storageSource = require('./storage-source');
-
-var _storageSource2 = _interopRequireDefault(_storageSource);
-
-var _storageSink = require('./storage-sink');
-
-var _storageSink2 = _interopRequireDefault(_storageSink);
-
 var _intent = require('./intent');
 
 var _intent2 = _interopRequireDefault(_intent);
@@ -11799,7 +11791,7 @@ function TaskList(sources) {
   return sinks;
 }
 
-},{"../Task/index":165,"./intent":170,"./model":171,"./storage-sink":172,"./storage-source":173,"./view":175,"./view-model":174,"@cycle/isolate":27,"cycle-onionify":36,"xstream":163}],170:[function(require,module,exports){
+},{"../Task/index":165,"./intent":170,"./model":171,"./view":173,"./view-model":172,"@cycle/isolate":27,"cycle-onionify":36,"xstream":163}],170:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -11858,7 +11850,7 @@ function intent(domSource, historySource) {
   return _xstream2.default.merge(changeRouteAction$, updateInputValueAction$, cancelInputAction$, insertTodoAction$, toggleAllAction$, deleteCompletedAction$);
 };
 
-},{"../../utils":176,"xstream":163,"xstream/extra/dropRepeats":161}],171:[function(require,module,exports){
+},{"../../utils":174,"xstream":163,"xstream/extra/dropRepeats":161}],171:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -11973,66 +11965,6 @@ function model(action$) {
 }
 
 },{"xstream":163}],172:[function(require,module,exports){
-"use strict";
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-exports.default = serialize;
-function serialize(state$) {
-  return state$.map(function (state) {
-    return JSON.stringify({
-      list: state.list.map(function (todoData) {
-        return {
-          title: todoData.title,
-          completed: todoData.completed
-        };
-      })
-    });
-  });
-};
-
-},{}],173:[function(require,module,exports){
-'use strict';
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-exports.default = deserialize;
-function merge() {
-  var result = {};
-  for (var i = 0; i < arguments.length; i++) {
-    var object = arguments[i];
-    for (var key in object) {
-      if (object.hasOwnProperty(key)) {
-        result[key] = object[key];
-      }
-    }
-  }
-  return result;
-}
-
-function safeJSONParse(str) {
-  return JSON.parse(str) || {};
-}
-
-function mergeWithDefaultTodosData(todosData) {
-  return merge({
-    inputValue: '',
-    list: [],
-    filter: '',
-    filterFn: function filterFn() {
-      return true;
-    } }, todosData);
-}
-
-// Take localStorage todoData stream and transform into
-// a JavaScript object. Set default data.
-function deserialize(localStorageValue$) {
-  return localStorageValue$.map(safeJSONParse).map(mergeWithDefaultTodosData);
-};
-
-},{}],174:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -12069,7 +12001,7 @@ function viewModel(state$, taskVNodes$) {
   });
 }
 
-},{"xstream/extra/sampleCombine":162}],175:[function(require,module,exports){
+},{"xstream/extra/sampleCombine":162}],173:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -12125,7 +12057,7 @@ function view(viewState$) {
   });
 };
 
-},{"@cycle/dom":13}],176:[function(require,module,exports){
+},{"@cycle/dom":13}],174:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {

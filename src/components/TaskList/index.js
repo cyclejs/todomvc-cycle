@@ -1,8 +1,6 @@
 import xs from 'xstream';
 import isolate from '@cycle/isolate';
 import {pick, mix} from 'cycle-onionify';
-import deserialize from './storage-source';
-import serialize from './storage-sink';
 import intent from './intent';
 import model from './model';
 import viewModel from './view-model';
