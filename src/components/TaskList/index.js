@@ -30,11 +30,9 @@ function Children(sources) {
 }
 
 export default function TaskList(sources) {
-  const localStorage$ = sources.storage.local.getItem('todos-cycle').take(1);
-  const sourceTodosData$ = deserialize(localStorage$);
   const state$ = sources.onion.state$;
   const action$ = intent(sources.DOM, sources.history);
-  const parentReducer$ = model(action$, sourceTodosData$);
+  const parentReducer$ = model(action$);
 
   const childrenSinks = isolate(Children, 'list')(sources);
   const childrenVNodes$ = childrenSinks.vnodes;
@@ -43,13 +41,10 @@ export default function TaskList(sources) {
 
   const vdom$ = view(viewState$);
   const reducer$ = xs.merge(parentReducer$, childrenReducer$);
-  const storage$ = serialize(state$)
-    .map(value => ({key: 'todos-cycle', value}));
 
   const sinks = {
     DOM: vdom$,
     onion: reducer$,
-    storage: storage$,
   };
   return sinks;
 }

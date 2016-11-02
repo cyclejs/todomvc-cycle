@@ -24,6 +24,7 @@
     "@cycle/storage": "3.0.0-rc2",
     "@cycle/xstream-run": "3.1.0",
     "cycle-onionify": "^1.2.0",
+    "cycle-storageify": "^1.0.0",
     "history": "^3.2.1",
     "todomvc-app-css": "2.0.3",
     "todomvc-common": "1.0.1",
