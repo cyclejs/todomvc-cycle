@@ -8,11 +8,15 @@ function getFilterFn(route) {
   }
 }
 
-export default function model(action$, sourceTodosData$) {
-  const sourceTodosReducer$ = sourceTodosData$
-    .map(sourceTodos => function sourceTodosReducer(prevState) {
-      return sourceTodos;
-    });
+export default function model(action$) {
+  const initialReducer$ = xs.of(function initialReducer(prevState) {
+    return {
+      inputValue: '',
+      list: [],
+      filter: '',
+      filterFn: () => true, // allow anything
+    }
+  });
 
   const changeRouteReducer$ = action$
     .filter(ac => ac.type === 'changeRoute')
@@ -74,7 +78,7 @@ export default function model(action$, sourceTodosData$) {
     });
 
   return xs.merge(
-    sourceTodosReducer$,
+    initialReducer$,
     updateInputValueReducer$,
     changeRouteReducer$,
     clearInputReducer$,
