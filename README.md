@@ -3,7 +3,7 @@ TodoMVC in Cycle.js
 
 TodoMVC example implemented in [Cycle.js](http://cycle.js.org).
 
-[Open the app]( http://cycle.js.org/todomvc-cycle/ )
+[Open the app]( https://cyclejs.github.io/todomvc-cycle/ )
 
 - - -
 
