@@ -1,0 +1,29 @@
+diff --git a/node_modules/cycle-storageify/lib/index.js b/node_modules/cycle-storageify/lib/index.js
+index 3bce7b6..bc76b21 100644
+--- a/node_modules/cycle-storageify/lib/index.js
++++ b/node_modules/cycle-storageify/lib/index.js
+@@ -22,15 +22,15 @@ function storageify(Component, options) {
+         // change initial reducer (first reducer) of component
+         // to merge default state with stored state
+         var childReducer$ = componentSinks.onion;
+-        var initialReducer$ = xstream_1.default.combine(storedData$, childReducer$.take(1))
+-            .map(function (_a) {
+-            var storedState = _a[0], initialReducerChild = _a[1];
+-            return function (prevState) {
+-                return Object.assign(initialReducerChild(prevState), storedState);
+-            };
+-        });
+-        // replace initial reducer
+-        var parentReducer$ = xstream_1.default.merge(initialReducer$, childReducer$.drop(1));
++        var parentReducer$ = storedData$.map(function (storedData) {
++          return childReducer$.startWith(function initialStorageReducer(prevState) {
++            if (prevState) {
++              return Object.assign({}, prevState, storedData);
++            } else {
++              return storedData;
++            }
++          })
++        }).flatten()
+         var storage$ = state$.map(_options.serialize)
+             .map(function (value) { return ({ key: _options.key, value: value }); });
+         var sinks = Object.assign(componentSinks, {

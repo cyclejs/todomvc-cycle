@@ -4,13 +4,12 @@ import view from './view';
 
 export default function Task(sources) {
   const state$ = sources.onion.state$;
-  const action$ = intent(sources.DOM);
-  const reducer$ = model(action$);
+  const actions = intent(sources.DOM);
+  const reducer$ = model(actions);
   const vdom$ = view(state$);
 
-  const sinks = {
+  return {
     DOM: vdom$,
     onion: reducer$,
   };
-  return sinks;
 }

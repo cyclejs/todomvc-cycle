@@ -1,33 +1,28 @@
 import xs from 'xstream';
 
-export default function model(action$) {
-  const startEditReducer$ = action$
-    .filter(action => action.type === 'startEdit')
+export default function model(actions) {
+  const startEditReducer$ = actions.startEdit$
     .mapTo(function startEditReducer(data) {
       return {...data, editing: true};
     });
 
-  const doneEditReducer$ = action$
-    .filter(action => action.type === 'doneEdit')
-    .map(action => function doneEditReducer(data) {
-      return {...data, title: action.payload, editing: false};
+  const doneEditReducer$ = actions.doneEdit$
+    .map(content => function doneEditReducer(data) {
+      return {...data, title: content, editing: false};
     });
 
-  const cancelEditReducer$ = action$
-    .filter(action => action.type === 'cancelEdit')
+  const cancelEditReducer$ = actions.cancelEdit$
     .mapTo(function cancelEditReducer(data) {
       return {...data, editing: false};
     });
 
-  const toggleReducer$ = action$
-    .filter(action => action.type === 'toggle')
-    .map(action => function toggleReducer(data) {
-      return {...data, completed: action.payload};
+  const toggleReducer$ = actions.toggle$
+    .map(isToggled => function toggleReducer(data) {
+      return {...data, completed: isToggled};
     });
 
-  const destroyReducer$ = action$
-    .filter(action => action.type === 'destroy')
-    .map(action => function destroyReducer(data) {
+  const destroyReducer$ = actions.destroy$
+    .mapTo(function destroyReducer(data) {
       return void 0;
     });
 

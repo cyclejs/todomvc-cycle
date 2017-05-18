@@ -3,45 +3,33 @@ import dropRepeats from 'xstream/extra/dropRepeats';
 import {ENTER_KEY, ESC_KEY} from '../../utils';
 
 export default function intent(domSource, historySource) {
-  const changeRouteAction$ = historySource
-    .map(location => location.pathname)
-    .compose(dropRepeats())
-    .map(payload => ({type: 'changeRoute', payload}));
+  return {
+    changeRoute$: historySource
+      .map(location => location.pathname)
+      .compose(dropRepeats()),
 
-  const updateInputValueAction$ = domSource
-    .select('.new-todo').events('input')
-    .map(ev => ev.target.value)
-    .map(payload => ({type: 'updateInputValue', payload}));
+    updateInputValue$: domSource
+      .select('.new-todo').events('input')
+      .map(ev => ev.target.value),
 
-  const cancelInputAction$ = domSource
-    .select('.new-todo').events('keydown')
-    .filter(ev => ev.keyCode === ESC_KEY)
-    .map(payload => ({type: 'cancelInput', payload}));
+    cancelInput$: domSource
+      .select('.new-todo').events('keydown')
+      .filter(ev => ev.keyCode === ESC_KEY),
 
-  const insertTodoAction$ = domSource
-    .select('.new-todo').events('keydown')
-    .filter(ev => {
-      const trimmedVal = String(ev.target.value).trim();
-      return ev.keyCode === ENTER_KEY && trimmedVal;
-    })
-    .map(ev => String(ev.target.value).trim())
-    .map(payload => ({type: 'insertTodo', payload}));
+    insertTodo$: domSource
+      .select('.new-todo').events('keydown')
+      .filter(ev => {
+        const trimmedVal = String(ev.target.value).trim();
+        return ev.keyCode === ENTER_KEY && trimmedVal;
+      })
+      .map(ev => String(ev.target.value).trim()),
 
-  const toggleAllAction$ = domSource
-    .select('.toggle-all').events('click')
-    .map(ev => ev.target.checked)
-    .map(payload => ({type: 'toggleAll', payload}));
+    toggleAll$: domSource
+      .select('.toggle-all').events('click')
+      .map(ev => ev.target.checked),
 
-  const deleteCompletedAction$ = domSource
-    .select('.clear-completed').events('click')
-    .mapTo({type: 'deleteCompleted'})
-
-  return xs.merge(
-    changeRouteAction$,
-    updateInputValueAction$,
-    cancelInputAction$,
-    insertTodoAction$,
-    toggleAllAction$,
-    deleteCompletedAction$
-  );
+    deleteCompleted$: domSource
+      .select('.clear-completed').events('click')
+      .mapTo(null),
+  };
 };

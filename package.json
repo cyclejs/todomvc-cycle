@@ -18,17 +18,16 @@
     }
   ],
   "dependencies": {
-    "@cycle/dom": "12.2.5",
-    "@cycle/history": "^4.0.1",
-    "@cycle/isolate": "1.4.x",
-    "@cycle/storage": "3.0.0-rc2",
-    "@cycle/xstream-run": "3.1.0",
-    "cycle-onionify": "^1.2.0",
-    "cycle-storageify": "^1.0.0",
-    "history": "^3.2.1",
-    "todomvc-app-css": "2.0.3",
-    "todomvc-common": "1.0.1",
-    "xstream": "^6.4.1"
+    "@cycle/dom": "17.3",
+    "@cycle/history": "6.2",
+    "@cycle/isolate": "2.1",
+    "@cycle/run": "3.1",
+    "@cycle/storage": "4.0",
+    "cycle-onionify": "4.0.0-rc.3",
+    "cycle-storageify": "1.0",
+    "todomvc-app-css": "2.1.x",
+    "todomvc-common": "1.0.3",
+    "xstream": "10.8"
   },
   "devDependencies": {
     "babel-plugin-transform-object-rest-spread": "^6.6.5",
@@ -39,10 +38,13 @@
     "live-server": "^0.9.0",
     "mkdirp": "^0.5.1",
     "npm-run-all": "^1.4.0",
+    "patch-package": "^2.0.0",
     "uglify-js": "2.6.1",
-    "watchify": "^3.6.1"
+    "watchify": "^3.6.1",
+    "yarn": "^0.24.4"
   },
   "scripts": {
+    "prepare": "patch-package",
     "build-debug": "mkdirp js && browserify src/app.js -t babelify --outfile js/app.js",
     "watch:js": "mkdirp js && watchify src/app.js -t babelify --outfile js/app.js -dv",
     "serve": "live-server ./",

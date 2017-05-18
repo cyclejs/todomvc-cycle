@@ -1,8 +1,9 @@
+import xs from 'xstream';
 import {
   a, button, div, footer, h1, header, input, li, section, span, strong, ul
 } from '@cycle/dom';
 
-function renderHeader(viewState) {
+function renderHeader(state) {
   return header('.header', [
     h1('todos'),
     input('.new-todo', {
@@ -11,39 +12,39 @@ function renderHeader(viewState) {
         placeholder: 'What needs to be done?',
         autofocus: true,
         name: 'newTodo',
-        value: viewState.inputValue
+        value: state.inputValue
       }
     })
   ]);
 }
 
-function renderMainSection(viewState) {
-  const allCompleted = viewState.list.reduce((x, y) => x && y.completed, true);
-  const sectionStyle = {'display': viewState.list.length ? '' : 'none'};
+function renderMainSection(state, listVDom) {
+  const allCompleted = state.list.reduce((x, y) => x && y.completed, true);
+  const sectionStyle = {'display': state.list.length ? '' : 'none'};
 
   return section('.main', {style: sectionStyle}, [
     input('.toggle-all', {
       props: {type: 'checkbox', checked: allCompleted},
     }),
-    ul('.todo-list', viewState.taskVNodes)
+    listVDom
   ]);
 }
 
-function renderFilterButton(viewState, filterTag, path, label) {
+function renderFilterButton(state, filterTag, path, label) {
   return li([
     a({
       attrs: {href: path},
-      class: {selected: viewState.filter === filterTag}
+      class: {selected: state.filter === filterTag}
     }, label)
   ]);
 }
 
-function renderFooter(viewState) {
-  const amountCompleted = viewState.list
-    .filter(viewState => viewState.completed)
+function renderFooter(state) {
+  const amountCompleted = state.list
+    .filter(task => task.completed)
     .length;
-  const amountActive = viewState.list.length - amountCompleted;
-  const footerStyle = {'display': viewState.list.length ? '' : 'none'};
+  const amountActive = state.list.length - amountCompleted;
+  const footerStyle = {'display': state.list.length ? '' : 'none'};
 
   return footer('.footer', {style: footerStyle}, [
     span('.todo-count', [
@@ -51,9 +52,9 @@ function renderFooter(viewState) {
       ' item' + (amountActive !== 1 ? 's' : '') + ' left'
     ]),
     ul('.filters', [
-      renderFilterButton(viewState, '', '/', 'All'),
-      renderFilterButton(viewState, 'active', '/active', 'Active'),
-      renderFilterButton(viewState, 'completed', '/completed', 'Completed'),
+      renderFilterButton(state, '', '/', 'All'),
+      renderFilterButton(state, 'active', '/active', 'Active'),
+      renderFilterButton(state, 'completed', '/completed', 'Completed'),
     ]),
     (amountCompleted > 0 ?
       button('.clear-completed', 'Clear completed (' + amountCompleted + ')')
@@ -62,12 +63,12 @@ function renderFooter(viewState) {
   ])
 }
 
-export default function view(viewState$) {
-  return viewState$.map(viewState =>
+export default function view(state$, listVDom$) {
+  return xs.combine(state$, listVDom$).map(([state, listVDom]) =>
     div([
-      renderHeader(viewState),
-      renderMainSection(viewState),
-      renderFooter(viewState)
+      renderHeader(state),
+      renderMainSection(state, listVDom),
+      renderFooter(state)
     ])
   );
 };

@@ -8,46 +8,50 @@ function getFilterFn(route) {
   }
 }
 
-export default function model(action$) {
+let uuid = Date.now();
+
+export default function model(actions) {
   const initialReducer$ = xs.of(function initialReducer(prevState) {
-    return {
-      inputValue: '',
-      list: [],
-      filter: '',
-      filterFn: () => true, // allow anything
+    if (prevState) {
+      return prevState;
+    } else {
+      return {
+        inputValue: '',
+        list: [],
+        filter: '',
+        filterFn: () => true, // allow anything
+      };
     }
   });
 
-  const changeRouteReducer$ = action$
-    .filter(ac => ac.type === 'changeRoute')
-    .map(ac => ac.payload)
+  const changeRouteReducer$ = actions.changeRoute$
     .startWith('/')
     .map(path => {
       const filterFn = getFilterFn(path);
-      return function changeRouteReducer(todosData) {
-        todosData.filter = path.replace('/', '').trim();
-        todosData.filterFn = filterFn;
-        return todosData;
+      return function changeRouteReducer(prevState) {
+        return {
+          ...prevState,
+          filter: path.replace('/', '').trim(),
+          filterFn: filterFn,
+        }
       };
     });
 
-  const updateInputValueReducer$ = action$
-    .filter(ac => ac.type === 'updateInputValue')
-    .map(action => function updateInputValue(prevState) {
-      return {...prevState, inputValue: action.payload};
+  const updateInputValueReducer$ = actions.updateInputValue$
+    .map(inputValue => function updateInputValue(prevState) {
+      return {...prevState, inputValue: inputValue};
     });
 
-  const clearInputReducer$ = action$
-    .filter(ac => ac.type === 'cancelInput' || ac.type === 'insertTodo')
-    .map(() => function clearInputReducer(prevState) {
+  const clearInputReducer$ = xs.merge(actions.cancelInput$, actions.insertTodo$)
+    .mapTo(function clearInputReducer(prevState) {
       return {...prevState, inputValue: ''};
     });
 
-  const insertTodoReducer$ = action$
-    .filter(ac => ac.type === 'insertTodo')
-    .map(action => function insertTodoReducer(prevState) {
+  const insertTodoReducer$ = actions.insertTodo$
+    .map(content => function insertTodoReducer(prevState) {
       const newTodo = {
-        title: action.payload,
+        key: uuid++,
+        title: content,
         completed: false,
         editing: false,
       };
@@ -57,19 +61,17 @@ export default function model(action$) {
       }
     });
 
-  const toggleAllReducer$ = action$
-    .filter(ac => ac.type === 'toggleAll')
-    .map(action => function toggleAllReducer(prevState) {
+  const toggleAllReducer$ = actions.toggleAll$
+    .map(isToggled => function toggleAllReducer(prevState) {
       return {
         ...prevState,
         list: prevState.list.map(task =>
-          ({...task, completed: action.payload})
+          ({...task, completed: isToggled})
         ),
       }
     });
 
-  const deleteCompletedReducer$ = action$
-    .filter(ac => ac.type === 'deleteCompleted')
+  const deleteCompletedReducer$ = actions.deleteCompleted$
     .mapTo(function deleteCompletedsReducer(prevState) {
       return {
         ...prevState,
