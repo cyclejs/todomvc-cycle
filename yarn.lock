@@ -1149,11 +1149,11 @@ cycle-onionify@4.0.0-rc.3:
   dependencies:
     xstream ">=10"
 
-cycle-storageify@1.0:
-  version "1.0.0"
-  resolved "https://registry.yarnpkg.com/cycle-storageify/-/cycle-storageify-1.0.0.tgz#736b53d491736ad5ec886f85908d802614c3cd06"
+cycle-storageify@2.0:
+  version "2.0.0"
+  resolved "https://registry.yarnpkg.com/cycle-storageify/-/cycle-storageify-2.0.0.tgz#03a286bea5e9b6cddb44fb158dcce4c0c7710867"
   dependencies:
-    xstream "6.x.x"
+    xstream "10.x"
 
 d@1:
   version "1.0.0"
@@ -3376,12 +3376,6 @@ wrappy@1:
 xstream@10.8, xstream@10.x, xstream@>=10:
   version "10.8.0"
   resolved "https://registry.yarnpkg.com/xstream/-/xstream-10.8.0.tgz#f3c70b12a71ef34dcc6af44ea7e1b0c40d320f4f"
-  dependencies:
-    symbol-observable "^1.0.2"
-
-xstream@6.x.x:
-  version "6.6.0"
-  resolved "https://registry.yarnpkg.com/xstream/-/xstream-6.6.0.tgz#89bf5b315786e4cba2a535ee9f5d8a716bee6117"
   dependencies:
     symbol-observable "^1.0.2"
 
