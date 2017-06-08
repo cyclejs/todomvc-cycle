@@ -23,7 +23,7 @@
     "@cycle/isolate": "2.1",
     "@cycle/run": "3.1",
     "@cycle/storage": "4.0",
-    "cycle-onionify": "4.0.0-rc.8",
+    "cycle-onionify": "4.0.0-rc.9",
     "cycle-storageify": "3.0",
     "todomvc-app-css": "2.1.x",
     "todomvc-common": "1.0.3",

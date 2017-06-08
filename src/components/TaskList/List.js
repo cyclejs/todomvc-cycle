@@ -3,14 +3,14 @@ import {pickCombine, pickMerge} from 'cycle-onionify';
 import Task from '../Task/index';
 
 export function List(sources) {
-  const tasks$ = sources.onion.asCollection(Task, sources, s => s.key);
+  const tasks = sources.onion.asCollection(Task, sources, s => s.key);
 
-  const vdom$ = tasks$
-    .compose(pickCombine('DOM'))
+  const vdom$ = tasks
+    .pickCombine('DOM')
     .map(vnodes => ul('.todo-list', vnodes));
 
-  const reducer$ = tasks$
-    .compose(pickMerge('onion'));
+  const reducer$ = tasks
+    .pickMerge('onion');
 
   return {
     DOM: vdom$,
