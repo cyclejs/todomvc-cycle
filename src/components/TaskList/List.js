@@ -3,7 +3,10 @@ import {pickCombine, pickMerge} from 'cycle-onionify';
 import Task from '../Task/index';
 
 export function List(sources) {
-  const tasks = sources.onion.asCollection(Task, sources, s => s.key);
+  const tasks = sources.onion.toCollection(Task)
+    .uniqueBy(s => s.key)
+    .isolateEach(key => key)
+    .build(sources);
 
   const vdom$ = tasks
     .pickCombine('DOM')
