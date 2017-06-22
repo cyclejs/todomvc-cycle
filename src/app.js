@@ -1,7 +1,7 @@
-import {run} from '@cycle/xstream-run';
+import {run} from '@cycle/run';
 import {makeDOMDriver} from '@cycle/dom';
 import {makeHistoryDriver} from '@cycle/history'
-import {createHistory} from 'history';
+import {createBrowserHistory} from 'history';
 import storageDriver from '@cycle/storage';
 // THE MAIN FUNCTION
 // This is the todo list component.
@@ -17,10 +17,10 @@ run(main, {
   // THE DOM DRIVER
   // `makeDOMDriver(container)` from Cycle DOM returns a
   // driver function to interact with the DOM.
-  DOM: makeDOMDriver('.todoapp', {transposition: true}),
+  DOM: makeDOMDriver('.todoapp'),
   // THE HISTORY DRIVER
   // A driver to interact with browser history
-  History: makeHistoryDriver(createHistory(), {capture: true}),
+  History: makeHistoryDriver(createBrowserHistory()),
   // THE STORAGE DRIVER
   // The storage driver which can be used to access values for
   // local- and sessionStorage keys as streams.
