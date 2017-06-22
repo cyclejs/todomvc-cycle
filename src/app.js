@@ -1,7 +1,7 @@
 import {run} from '@cycle/run';
 import {makeDOMDriver} from '@cycle/dom';
-import {makeHistoryDriver} from '@cycle/history'
-import {createBrowserHistory} from 'history';
+import {captureClicks, makeHistoryDriver} from '@cycle/history'
+import {createHashHistory} from 'history';
 import storageDriver from '@cycle/storage';
 // THE MAIN FUNCTION
 // This is the todo list component.
@@ -20,7 +20,7 @@ run(main, {
   DOM: makeDOMDriver('.todoapp'),
   // THE HISTORY DRIVER
   // A driver to interact with browser history
-  History: makeHistoryDriver(createBrowserHistory()),
+  History: captureClicks(makeHistoryDriver(createHashHistory())),
   // THE STORAGE DRIVER
   // The storage driver which can be used to access values for
   // local- and sessionStorage keys as streams.
