@@ -18,16 +18,16 @@
     }
   ],
   "dependencies": {
-    "@cycle/collection": "^0.3.0",
-    "@cycle/dom": "10.0.0-rc33",
-    "@cycle/history": "^4.0.0",
-    "@cycle/isolate": "1.4.x",
-    "@cycle/storage": "3.0.0-rc2",
-    "@cycle/xstream-run": "3.0.0",
-    "history": "^3.0.0",
-    "todomvc-app-css": "2.0.3",
-    "todomvc-common": "1.0.1",
-    "xstream": "^5.0.5"
+    "@cycle/collection": "^0.6.0",
+    "@cycle/dom": "^17.4.0",
+    "@cycle/history": "^6.2.0",
+    "@cycle/isolate": "^3.0.0",
+    "@cycle/run": "^3.1.0",
+    "@cycle/storage": "^4.0.0",
+    "history": "^4.6.3",
+    "todomvc-app-css": "^2.1.0",
+    "todomvc-common": "^1.0.3",
+    "xstream": "^10.8.0"
   },
   "devDependencies": {
     "babel-plugin-transform-object-rest-spread": "^6.6.5",

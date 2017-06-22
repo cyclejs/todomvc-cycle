@@ -16,7 +16,7 @@ export default function intent(DOMSource, History) {
     // THE URL STREAM
     // A stream of URL clicks in the app
     DOMSource.select('a').events('click')
-      .map(event =>  event.target.hash.replace('#', ''))
+      .map(event => event.target.hash.replace('#', ''))
       .map(payload => ({type: 'url', payload})),
 
     // CLEAR INPUT STREAM

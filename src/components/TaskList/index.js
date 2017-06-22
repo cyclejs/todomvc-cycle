@@ -1,5 +1,4 @@
 import xs from 'xstream';
-import isolate from '@cycle/isolate'
 import intent from './intent';
 import model from './model';
 import view from './view';
