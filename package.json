@@ -39,6 +39,7 @@
     "mkdirp": "^0.5.1",
     "npm-run-all": "^1.4.0",
     "patch-package": "^2.0.0",
+    "tape": "^4.8.0",
     "uglify-js": "2.6.1",
     "watchify": "^3.6.1",
     "yarn": "^0.24.4"
@@ -50,6 +51,7 @@
     "serve": "live-server ./",
     "uglify": "uglifyjs js/app.js -o js/app.min.js",
     "build": "npm run build-debug && npm run uglify",
-    "start": "npm-run-all --parallel watch:js serve"
+    "start": "npm-run-all --parallel watch:js serve",
+    "test": "tape -r babel-register src/**/*.test.js"
   }
 }
