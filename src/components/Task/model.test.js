@@ -5,11 +5,11 @@ import model from './model';
 test('doneEdit updates the title of the todo', assert => {
   const expected = 'newTitle';
   const actions = {
-    startEdit$: xs.fromArray([]),
+    startEdit$: xs.empty(),
     doneEdit$: xs.fromArray([expected]),
-    cancelEdit$: xs.fromArray([]),
-    toggle$: xs.fromArray([]),
-    destroy$: xs.fromArray([])
+    cancelEdit$: xs.empty(),
+    toggle$: xs.empty(),
+    destroy$: xs.empty()
   };
   model(actions)
     .addListener({
