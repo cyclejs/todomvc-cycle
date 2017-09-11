@@ -18,16 +18,16 @@
     }
   ],
   "dependencies": {
-    "@cycle/dom": "17.4",
-    "@cycle/history": "6.2",
-    "@cycle/isolate": "3.0",
-    "@cycle/run": "3.1",
-    "@cycle/storage": "4.0",
-    "cycle-onionify": "4.0.0-rc.10",
-    "cycle-storageify": "3.0",
+    "@cycle/dom": "18.3",
+    "@cycle/history": "6.4",
+    "@cycle/isolate": "3.1",
+    "@cycle/run": "3.2",
+    "@cycle/storage": "4.1.1",
+    "cycle-onionify": "4.0.0-rc.17",
+    "cycle-storageify": "3.2",
     "todomvc-app-css": "2.1.x",
     "todomvc-common": "1.0.3",
-    "xstream": "10.8"
+    "xstream": "10.9"
   },
   "devDependencies": {
     "babel-plugin-transform-object-rest-spread": "^6.6.5",
