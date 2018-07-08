@@ -3,6 +3,8 @@ TodoMVC in Cycle.js
 
 TodoMVC example implemented in [Cycle.js](http://cycle.js.org).
 
+Updated [branch](https://github.com/cyclejs/todomvc-cycle/tree/onionify) that is based on onionify state management.
+
 [Open the app]( https://cyclejs.github.io/todomvc-cycle/ )
 
 - - -
